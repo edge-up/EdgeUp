@@ -1,0 +1,282 @@
+// Prisma Schema for EdgeUp - NSE Momentum Analytics Platform
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ================================
+// AUTHENTICATION & USERS
+// ================================
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  password       String
+  role           UserRole  @default(USER)
+  emailVerified  DateTime?
+  image          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  sessions       Session[]
+  accounts       Account[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// ================================
+// MARKET DATA - SECTORS
+// ================================
+
+model Sector {
+  id             String   @id @default(cuid())
+  name           String   @unique  // e.g., "NIFTY BANK", "NIFTY IT"
+  symbol         String   @unique  // e.g., "NIFTY_BANK", "NIFTY_IT"
+  dhanSecurityId String?  // Dhan's security ID for this index
+  description    String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  constituents   SectorConstituent[]
+  snapshots      SectorSnapshot[]
+
+  @@index([symbol])
+  @@index([isActive])
+}
+
+model Stock {
+  id               String   @id @default(cuid())
+  symbol           String   @unique  // NSE symbol e.g., "RELIANCE", "TCS"
+  name             String            // Full company name
+  isin             String?  @unique  // ISIN code
+  dhanSecurityId   String?           // Dhan's security ID
+  industry         String?
+  isFOEligible     Boolean  @default(false)
+  lotSize          Int?              // F&O lot size
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  sectors          SectorConstituent[]
+  snapshots        StockSnapshot[]
+
+  @@index([symbol])
+  @@index([isFOEligible])
+  @@index([isActive])
+}
+
+// Many-to-many: Stocks can belong to multiple sectors
+model SectorConstituent {
+  id         String   @id @default(cuid())
+  sectorId   String
+  stockId    String
+  weight     Float?   // Weight in the sector index (if available)
+  addedAt    DateTime @default(now())
+
+  sector     Sector   @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+  stock      Stock    @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([sectorId, stockId])
+  @@index([sectorId])
+  @@index([stockId])
+}
+
+// ================================
+// F&O MASTER LIST
+// ================================
+
+model FOMaster {
+  id            String   @id @default(cuid())
+  symbol        String   @unique
+  lotSize       Int
+  tickSize      Float    @default(0.05)
+  expiryDate    DateTime?
+  seriesMonth   String?  // e.g., "JAN2026"
+  isActive      Boolean  @default(true)
+  updatedAt     DateTime @updatedAt
+
+  @@index([symbol])
+  @@index([isActive])
+}
+
+// ================================
+// TRADING CALENDAR
+// ================================
+
+model TradingCalendar {
+  id          String          @id @default(cuid())
+  date        DateTime        @unique @db.Date
+  isHoliday   Boolean         @default(false)
+  holidayName String?
+  sessionType TradingSession  @default(NORMAL)
+  createdAt   DateTime        @default(now())
+
+  @@index([date])
+  @@index([isHoliday])
+}
+
+enum TradingSession {
+  NORMAL
+  MUHURAT    // Diwali special session
+  HALF_DAY
+  CLOSED
+}
+
+// ================================
+// SNAPSHOTS - FROZEN DATA AT 09:25 AM
+// ================================
+
+model Snapshot {
+  id              String   @id @default(cuid())
+  tradingDate     DateTime @db.Date
+  snapshotTime    DateTime // Exact time of snapshot (should be ~09:25 AM IST)
+  status          SnapshotStatus @default(PENDING)
+  totalSectors    Int      @default(0)
+  totalStocks     Int      @default(0)
+  bullishSectors  Int      @default(0)
+  bearishSectors  Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  sectorSnapshots SectorSnapshot[]
+  stockSnapshots  StockSnapshot[]
+
+  @@unique([tradingDate])
+  @@index([tradingDate])
+  @@index([status])
+}
+
+enum SnapshotStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model SectorSnapshot {
+  id              String    @id @default(cuid())
+  snapshotId      String
+  sectorId        String
+  
+  // Price data
+  currentValue    Float     // Current index value at snapshot time
+  previousClose   Float     // Previous day close
+  percentChange   Float     // % change
+  direction       Direction
+  
+  // Qualifying info
+  qualifyingStocks Int      @default(0)
+  isQualifying    Boolean   @default(false) // Met ±1% threshold
+  
+  createdAt       DateTime  @default(now())
+
+  snapshot        Snapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  sector          Sector    @relation(fields: [sectorId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, sectorId])
+  @@index([snapshotId])
+  @@index([sectorId])
+  @@index([isQualifying])
+}
+
+model StockSnapshot {
+  id              String    @id @default(cuid())
+  snapshotId      String
+  stockId         String
+  sectorId        String?   // The sector context for this stock
+  
+  // Price data
+  ltp             Float     // Last traded price at snapshot time
+  previousClose   Float     // Previous day close
+  percentChange   Float     // % change
+  direction       Direction
+  
+  // Qualification
+  isFOEligible    Boolean   @default(false)
+  isQualifying    Boolean   @default(false) // Met ±1% threshold
+  
+  // Additional data (for future features)
+  volume          BigInt?
+  openPrice       Float?
+  highPrice       Float?
+  lowPrice        Float?
+  
+  createdAt       DateTime  @default(now())
+
+  snapshot        Snapshot  @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+  stock           Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
+
+  @@unique([snapshotId, stockId, sectorId])
+  @@index([snapshotId])
+  @@index([stockId])
+  @@index([sectorId])
+  @@index([isQualifying])
+  @@index([isFOEligible])
+}
+
+enum Direction {
+  UP
+  DOWN
+  NEUTRAL
+}
+
+// ================================
+// DATA FEED STATUS (MONITORING)
+// ================================
+
+model DataFeedStatus {
+  id              String    @id @default(cuid())
+  feedType        String    // e.g., "DHAN_QUOTES", "DHAN_WEBSOCKET"
+  status          FeedStatus
+  lastSuccessAt   DateTime?
+  lastErrorAt     DateTime?
+  errorMessage    String?
+  recordsReceived Int       @default(0)
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([feedType])
+}
+
+enum FeedStatus {
+  HEALTHY
+  DEGRADED
+  DOWN
+  UNKNOWN
+}
