@@ -1,7 +1,6 @@
 import { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
-import prisma from '@/lib/db/prisma';
 
 export const authOptions: AuthOptions = {
     providers: [
@@ -15,6 +14,9 @@ export const authOptions: AuthOptions = {
                 if (!credentials?.email || !credentials?.password) {
                     throw new Error('Email and password are required');
                 }
+
+                // Lazy load prisma to prevent build-time initialization errors
+                const { default: prisma } = await import('@/lib/db/prisma');
 
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
