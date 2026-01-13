@@ -17,6 +17,7 @@ interface SectorStocksResponse {
         tradingDate?: string;
         timestamp?: string;
     };
+    error?: string;
 }
 
 export default function DemoSectorDetailPage() {
