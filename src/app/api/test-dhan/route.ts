@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
             results.tests.equityQuote = {
                 success: quotes.length > 0,
                 symbol: 'RELIANCE',
-                price: quotes[0]?.lastPrice
+                price: quotes[0]?.ltp
             };
         } catch (e) {
             results.tests.equityQuote = { success: false, error: String(e) };

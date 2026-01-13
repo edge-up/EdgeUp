@@ -230,7 +230,7 @@ export class DhanClient {
                 category = 'NSE_FNO';
                 cleanId = id.replace('NSE_FNO_', '');
             } else if (id.startsWith('IDX_')) {
-                category = 'IDX_I'; // Note: Indices might be different? usually IDX_I
+                category = 'IDX_I';
                 cleanId = id.replace('IDX_', '');
             } else {
                 // Default

@@ -22,10 +22,6 @@ export async function GET(request: NextRequest) {
     }
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-        console.log('🔐 Auth Failed:', {
-            received: authHeader,
-            expected: `Bearer ${cronSecret?.substring(0, 3)}...`
-        });
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
