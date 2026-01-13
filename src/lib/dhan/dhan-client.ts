@@ -28,6 +28,7 @@ export class DhanClient {
         return {
             'Content-Type': 'application/json',
             'access-token': this.accessToken,
+            'client-id': this.clientId,
         };
     }
 
@@ -291,6 +292,7 @@ export class DhanClient {
                         change,
                         changePercent,
                         lastTradeTime: info.last_trade_time || Date.now(),
+                        openInterest: (info as any).oi || 0,
                     });
                 });
             });

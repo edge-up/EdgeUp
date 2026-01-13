@@ -154,9 +154,17 @@ export function calculatePercentChange(current: number, previous: number): numbe
 
 /**
  * Check if percent change meets qualifying threshold
+ * Uses PRICE_CHANGE_THRESHOLD from config (env variable)
  */
-export function isQualifying(percentChange: number, threshold: number = DEFAULT_MARKET_CONFIG.qualifyingThreshold): boolean {
-    return Math.abs(percentChange) >= threshold;
+export function isQualifying(percentChange: number, threshold?: number): boolean {
+    // Dynamically import to avoid circular dependency issues
+    // Default is 1% if config not loaded
+    const configThreshold = threshold ?? (
+        typeof process !== 'undefined'
+            ? parseFloat(process.env.NEXT_PUBLIC_PRICE_CHANGE_THRESHOLD || '1')
+            : DEFAULT_MARKET_CONFIG.qualifyingThreshold
+    );
+    return Math.abs(percentChange) >= configThreshold;
 }
 
 /**

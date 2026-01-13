@@ -1,9 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { SectorCard } from '@/components/dashboard/SectorCard';
 import { SnapshotStatus } from '@/components/dashboard/SnapshotStatus';
 import { SectorData } from '@/types';
+import {
+    REFRESH_INTERVAL_MS,
+    isWithinAnalysisWindow,
+    getAnalysisWindowString,
+    getTimeRemainingInWindow
+} from '@/lib/config';
 
 interface SectorsResponse {
     success: boolean;
@@ -28,8 +34,10 @@ export default function DashboardClient() {
     const [data, setData] = useState<SectorsResponse['data'] | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isLiveWindow, setIsLiveWindow] = useState(false);
+    const [timeRemaining, setTimeRemaining] = useState(0);
 
-    const fetchData = async () => {
+    const fetchData = useCallback(async () => {
         try {
             const res = await fetch('/api/sectors');
             const json: SectorsResponse = await res.json();
@@ -45,20 +53,29 @@ export default function DashboardClient() {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         fetchData();
 
-        // Refresh every 30 seconds if not frozen
-        const interval = setInterval(() => {
-            if (!data?.isFrozen) {
+        // Update live window status every second
+        const windowCheck = setInterval(() => {
+            setIsLiveWindow(isWithinAnalysisWindow());
+            setTimeRemaining(getTimeRemainingInWindow());
+        }, 1000);
+
+        // Auto-refresh during live window using configurable interval
+        const refreshInterval = setInterval(() => {
+            if (isWithinAnalysisWindow() && !data?.isFrozen) {
                 fetchData();
             }
-        }, 30000);
+        }, REFRESH_INTERVAL_MS);
 
-        return () => clearInterval(interval);
-    }, [data?.isFrozen]);
+        return () => {
+            clearInterval(windowCheck);
+            clearInterval(refreshInterval);
+        };
+    }, [fetchData, data?.isFrozen]);
 
     if (loading) {
         return (

@@ -88,10 +88,13 @@ model Stock {
   symbol           String   @unique  // NSE symbol e.g., "RELIANCE", "TCS"
   name             String            // Full company name
   isin             String?  @unique  // ISIN code
-  dhanSecurityId   String?           // Dhan's security ID
+  dhanSecurityId   String?           // Dhan's security ID (Equity)
+  dhanFNOSecurityId String?          // Dhan's security ID (Current Month Future) for OI
   industry         String?
   isFOEligible     Boolean  @default(false)
   lotSize          Int?              // F&O lot size
+  previousDayOI    BigInt?           // Previous day's closing OI (updated by 6:30 AM cron)
+  lastOIUpdate     DateTime?         // When OI was last updated
   isActive         Boolean  @default(true)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -238,6 +241,8 @@ model StockSnapshot {
   openPrice       Float?
   highPrice       Float?
   lowPrice        Float?
+  openInterest    BigInt?   // Current day OI
+  previousOI      BigInt?   // Previous session OI (for change calculation)
   
   createdAt       DateTime  @default(now())
 

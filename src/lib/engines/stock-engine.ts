@@ -47,10 +47,10 @@ export class StockEngine {
         }
 
         // Get security IDs for Dhan API
-        const stocks = constituents.map(c => c.stock);
+        const stocks = constituents.map((c: any) => c.stock);
         const securityIds = stocks
-            .filter(s => s.dhanSecurityId)
-            .map(s => s.dhanSecurityId as string);
+            .filter((s: any) => s.dhanSecurityId)
+            .map((s: any) => s.dhanSecurityId as string);
 
         try {
             // Fetch quotes from Dhan API
@@ -60,7 +60,7 @@ export class StockEngine {
             const quoteMap = new Map(quotes.map(q => [q.securityId, q]));
 
             // Calculate stock data
-            const stockData: StockData[] = stocks.map(stock => {
+            const stockData: StockData[] = stocks.map((stock: any) => {
                 const quote = stock.dhanSecurityId ? quoteMap.get(stock.dhanSecurityId) : null;
 
                 const ltp = quote?.ltp || 0;
@@ -86,6 +86,7 @@ export class StockEngine {
                     open: quote?.open,
                     high: quote?.high,
                     low: quote?.low,
+                    openInterest: quote?.openInterest,
                 };
             });
 
@@ -104,11 +105,83 @@ export class StockEngine {
 
     /**
      * Get only qualifying stocks in a sector
-     * Qualifying = F&O eligible + ≥±1% change
+     * Filters applied:
+     * 1. Stock is in NSE F&O list (isFOEligible)
+     * 2. Stock price change ≥ +1% or ≤ -1%
+     * 3. OI change ≥ 7% (from previous day)
+     * 4. Time window: 9:15–9:25 AM IST (optional, for live trading)
      */
     async getQualifyingStocks(sectorId: string, forceRefresh: boolean = false): Promise<StockData[]> {
         const allStocks = await this.getStocksInSector(sectorId, forceRefresh);
-        return allStocks.filter(s => s.isQualifying);
+
+        // Step 1 & 2: Filter by F&O eligibility and price change >= 1%
+        const priceQualifyingStocks = allStocks.filter(s => s.isQualifying);
+
+        if (priceQualifyingStocks.length === 0) {
+            return [];
+        }
+
+        // Step 3: Apply OI Change Filter (>= configured threshold)
+        // Uses previousDayOI field populated by 6:30 AM pre-market cron
+        const { OI_CHANGE_THRESHOLD } = await import('@/lib/config');
+        const qualifiedStocks: StockData[] = [];
+
+        // Get previousDayOI for stocks that passed price filter
+        const stockIds = priceQualifyingStocks.map(s => s.id);
+        const stocksWithOI = await prisma.stock.findMany({
+            where: { id: { in: stockIds } },
+            select: { id: true, previousDayOI: true, lastOIUpdate: true },
+        });
+
+        type StockOIData = { id: string; previousDayOI: bigint | null; lastOIUpdate: Date | null };
+        const oiMap = new Map<string, StockOIData>(
+            stocksWithOI.map((s: StockOIData) => [s.id, s])
+        );
+
+        for (const stock of priceQualifyingStocks) {
+            const stockOI = oiMap.get(stock.id);
+            const currentOI = stock.openInterest || 0;
+            const previousOI = stockOI?.previousDayOI
+                ? Number(stockOI.previousDayOI)
+                : 0;
+
+            let oiChangePercent = 0;
+            if (previousOI > 0 && currentOI > 0) {
+                oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
+            }
+
+            // Apply OI change filter: >= 7% increase OR decrease (absolute change)
+            // If previous OI is 0 (no data from cron yet), skip OI filter for this stock
+            const passesOIFilter = previousOI === 0 || Math.abs(oiChangePercent) >= OI_CHANGE_THRESHOLD;
+
+            if (passesOIFilter) {
+                qualifiedStocks.push({
+                    ...stock,
+                    previousOpenInterest: previousOI,
+                    oiChangePercent: Math.round(oiChangePercent * 100) / 100,
+                });
+            }
+        }
+
+        // Step 4: Time window check (9:15-9:25 AM IST)
+        // Note: This is commented out to allow testing outside market hours
+        // Uncomment for production use during live trading
+        /*
+        const now = new Date();
+        const istTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        const hours = istTime.getHours();
+        const minutes = istTime.getMinutes();
+        const currentTimeMinutes = hours * 60 + minutes;
+        const startTimeMinutes = 9 * 60 + 15; // 9:15 AM
+        const endTimeMinutes = 9 * 60 + 25;   // 9:25 AM
+        const isWithinTimeWindow = currentTimeMinutes >= startTimeMinutes && currentTimeMinutes <= endTimeMinutes;
+        
+        if (!isWithinTimeWindow) {
+            return []; // Only return stocks during the analysis window
+        }
+        */
+
+        return qualifiedStocks;
     }
 
     /**
@@ -201,7 +274,7 @@ export class StockEngine {
             select: { symbol: true, lotSize: true },
         });
 
-        const foSymbols = new Set(foList.map(f => f.symbol));
+        const foSymbols = new Set(foList.map((f: any) => f.symbol));
 
         // Update all stocks
         await prisma.stock.updateMany({

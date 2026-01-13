@@ -1,10 +1,22 @@
 import { Redis } from '@upstash/redis';
 
-// Create Redis client from environment variables
-const redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL || '',
-    token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-});
+// Check if Redis is properly configured
+const isRedisConfigured = !!(
+    process.env.UPSTASH_REDIS_REST_URL &&
+    process.env.UPSTASH_REDIS_REST_TOKEN
+);
+
+// Create Redis client only if configured
+const redis = isRedisConfigured
+    ? new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL!,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+    : null;
+
+if (!isRedisConfigured) {
+    console.warn('⚠️ Upstash Redis not configured. Caching disabled.');
+}
 
 export { redis };
 
@@ -30,9 +42,11 @@ export const CACHE_TTL = {
 
 /**
  * Cache wrapper with automatic JSON serialization
+ * Gracefully returns null/void if Redis is not configured
  */
 export const cache = {
     async get<T>(key: string): Promise<T | null> {
+        if (!redis) return null; // Cache disabled
         try {
             const data = await redis.get(key);
             return data as T | null;
@@ -43,6 +57,7 @@ export const cache = {
     },
 
     async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+        if (!redis) return; // Cache disabled
         try {
             if (ttlSeconds) {
                 await redis.setex(key, ttlSeconds, JSON.stringify(value));
@@ -55,6 +70,7 @@ export const cache = {
     },
 
     async del(key: string): Promise<void> {
+        if (!redis) return; // Cache disabled
         try {
             await redis.del(key);
         } catch (error) {
@@ -63,6 +79,7 @@ export const cache = {
     },
 
     async delPattern(pattern: string): Promise<void> {
+        if (!redis) return; // Cache disabled
         try {
             const keys = await redis.keys(pattern);
             if (keys.length > 0) {
@@ -74,6 +91,7 @@ export const cache = {
     },
 
     async exists(key: string): Promise<boolean> {
+        if (!redis) return false; // Cache disabled
         try {
             const result = await redis.exists(key);
             return result === 1;
@@ -85,3 +103,4 @@ export const cache = {
 };
 
 export default redis;
+

@@ -16,6 +16,7 @@ export interface DhanQuote {
     change: number;
     changePercent: number;
     lastTradeTime: number;
+    openInterest?: number;
 }
 
 export interface DhanLTP {
@@ -79,6 +80,9 @@ export interface StockData {
     open?: number;
     high?: number;
     low?: number;
+    openInterest?: number;
+    previousOpenInterest?: number;
+    oiChangePercent?: number;  // (current - prev) / prev * 100
 }
 
 export interface SnapshotData {
