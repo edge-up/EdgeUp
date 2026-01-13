@@ -54,11 +54,29 @@ async function fetchDhanScripMaster(): Promise<ScripMap> {
                 eqCount++;
             }
 
-            // HANDLE FUTURES (NFO exchange, FUTSTK instrument)
-            if (exchange === 'NFO' && instrument === 'FUTSTK') {
+            // HANDLE FUTURES
+            // CSV: NSE, D, ID, FUTSTK, ..., RELIANCE-Jan2026-FUT, ...
+            const isFutures = instrument === 'FUTSTK' && (exchange === 'NFO' || exchange === 'NSE');
+
+            if (isFutures) {
+                // Extract underlying symbol from "RELIANCE-Jan2026-FUT" -> "RELIANCE"
+                // Some might be "M&M-Jan2026-FUT", so be careful with splitting.
+                // Usually it's Symbol-ExpiryString-FUT.
+                // Safest is to take everything before the last two hyphens? 
+                // Or just use the first part if we assume standard format.
+                // Let's try splitting by '-' and taking the first part for now.
+                // But "M&M" might be safe? "M&M-Jan..." -> "M&M"
+
+                let underlying = cleanSymbol;
+                const hyphenIndex = cleanSymbol.indexOf('-');
+                if (hyphenIndex > 0) {
+                    underlying = cleanSymbol.substring(0, hyphenIndex);
+                }
+
                 const expiry = parts[8]?.trim();
-                if (!futCandidates[cleanSymbol]) futCandidates[cleanSymbol] = [];
-                futCandidates[cleanSymbol].push({ id: securityId, expiry });
+
+                if (!futCandidates[underlying]) futCandidates[underlying] = [];
+                futCandidates[underlying].push({ id: securityId, expiry });
             }
         }
 

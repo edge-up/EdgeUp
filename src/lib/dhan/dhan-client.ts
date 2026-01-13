@@ -216,24 +216,29 @@ export class DhanClient {
     // HELPER METHODS
     // ================================
 
-    private buildSecurityPayload(securityIds: string[]): Record<string, string[]> {
-        const payload: Record<string, string[]> = {};
+    private buildSecurityPayload(securityIds: string[]): Record<string, number[]> {
+        const payload: Record<string, number[]> = {};
 
         securityIds.forEach(id => {
+            let cleanId = id;
+            let category = 'NSE_EQ';
+
             if (id.startsWith('NSE_EQ_')) {
-                if (!payload.NSE_EQ) payload.NSE_EQ = [];
-                payload.NSE_EQ.push(id.replace('NSE_EQ_', ''));
+                category = 'NSE_EQ';
+                cleanId = id.replace('NSE_EQ_', '');
             } else if (id.startsWith('NSE_FNO_')) {
-                if (!payload.NSE_FNO) payload.NSE_FNO = [];
-                payload.NSE_FNO.push(id.replace('NSE_FNO_', ''));
+                category = 'NSE_FNO';
+                cleanId = id.replace('NSE_FNO_', '');
             } else if (id.startsWith('IDX_')) {
-                if (!payload.IDX_I) payload.IDX_I = [];
-                payload.IDX_I.push(id.replace('IDX_', ''));
+                category = 'IDX_I'; // Note: Indices might be different? usually IDX_I
+                cleanId = id.replace('IDX_', '');
             } else {
-                // Default to NSE_EQ
-                if (!payload.NSE_EQ) payload.NSE_EQ = [];
-                payload.NSE_EQ.push(id);
+                // Default
+                category = 'NSE_EQ';
             }
+
+            if (!payload[category]) payload[category] = [];
+            payload[category].push(parseInt(cleanId, 10));
         });
 
         return payload;

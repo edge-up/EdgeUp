@@ -14,9 +14,18 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
     // Verify cron secret for security
     const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET;
+    let cronSecret = process.env.CRON_SECRET || '';
+
+    // Sanitize secret (remove surrounding quotes if present)
+    if (cronSecret.startsWith('"') && cronSecret.endsWith('"')) {
+        cronSecret = cronSecret.slice(1, -1);
+    }
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        console.log('🔐 Auth Failed:', {
+            received: authHeader,
+            expected: `Bearer ${cronSecret?.substring(0, 3)}...`
+        });
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -53,7 +62,7 @@ export async function GET(request: NextRequest) {
         // Step 2: Batch fetch quotes for all FNO securities
         const securityIds = foStocks
             .map((s: { dhanFNOSecurityId: string | null }) => s.dhanFNOSecurityId)
-            .filter((id): id is string => id !== null);
+            .filter((id: string | null): id is string => id !== null);
 
         let quotes;
         try {
@@ -62,7 +71,8 @@ export async function GET(request: NextRequest) {
             console.error('Failed to fetch quotes from Dhan:', error);
             return NextResponse.json({
                 success: false,
-                error: 'Failed to fetch quotes from Dhan API',
+                error: `Failed to fetch quotes from Dhan API: ${error instanceof Error ? error.message : String(error)}`,
+                details: error,
             }, { status: 500 });
         }
 
@@ -104,9 +114,22 @@ export async function GET(request: NextRequest) {
         const duration = Date.now() - startTime;
         console.log(`✅ OI update complete: ${updatedCount} updated, ${failedCount} failed in ${duration}ms`);
 
+        // Run cleanup (consolidated from separate cron to save Vercel slot)
+        try {
+            await fetch(new URL('/api/cron/cleanup', request.url), {
+                method: 'GET',
+                headers: { 'Authorization': request.headers.get('Authorization') || '' }
+            });
+            console.log('🧹 Cleanup triggered successfully');
+        } catch (e) {
+            console.error('⚠️ Cleanup trigger failed:', e);
+            // Don't fail the main job
+        }
+
         return NextResponse.json({
             success: true,
-            updated: updatedCount,
+            updatedCount,
+            message: `Updated OI for ${updatedCount} stocks (and triggered cleanup)`,
             failed: failedCount,
             total: foStocks.length,
             duration,
