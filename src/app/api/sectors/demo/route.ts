@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { SectorData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/sectors/demo
  * Returns mock sector data for UI testing without Dhan API

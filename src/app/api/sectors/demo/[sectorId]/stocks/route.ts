@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { StockData } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteParams {
     params: {
         sectorId: string;
