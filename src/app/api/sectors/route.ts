@@ -5,6 +5,8 @@ import { getSectorEngine } from '@/lib/engines/sector-engine';
 import { getSnapshotEngine } from '@/lib/engines/snapshot-engine';
 import { isAfterSnapshotTime, formatTimeIST, getCurrentIST } from '@/lib/utils/market-time';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/sectors
  * Returns qualifying sectors with current/snapshot data

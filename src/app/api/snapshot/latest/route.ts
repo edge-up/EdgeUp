@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { getSnapshotEngine } from '@/lib/engines/snapshot-engine';
 import { getNextSnapshotTime, formatDateTimeIST } from '@/lib/utils/market-time';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/snapshot/latest
  * Returns the latest frozen snapshot

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSnapshotEngine } from '@/lib/engines/snapshot-engine';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/cron/cleanup
  * Called by Vercel cron to cleanup old snapshots

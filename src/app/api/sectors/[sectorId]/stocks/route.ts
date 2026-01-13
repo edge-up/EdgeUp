@@ -6,6 +6,8 @@ import { getSnapshotEngine } from '@/lib/engines/snapshot-engine';
 import { getSectorEngine } from '@/lib/engines/sector-engine';
 import { formatTimeIST, getCurrentIST } from '@/lib/utils/market-time';
 
+export const dynamic = 'force-dynamic';
+
 interface RouteParams {
     params: {
         sectorId: string;

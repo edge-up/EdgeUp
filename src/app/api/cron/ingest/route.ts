@@ -3,6 +3,8 @@ import { getSnapshotEngine } from '@/lib/engines/snapshot-engine';
 import { isAfterSnapshotTime, getTradingDate } from '@/lib/utils/market-time';
 import prisma from '@/lib/db/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/cron/ingest
  * Called by Vercel cron to ingest market data and create snapshot
