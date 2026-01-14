@@ -195,6 +195,70 @@ export class StockEngine {
     }
 
     /**
+     * Get all price-qualifying stocks with OI data (for watchlist display)
+     * Returns stocks that pass price filter (≥1%) with their OI change info
+     * Users can see why stocks don't fully qualify (OI < 7%)
+     */
+    async getPriceQualifiedStocksWithOI(sectorId: string, forceRefresh: boolean = false): Promise<{
+        qualifyingStocks: StockData[];
+        watchlistStocks: StockData[];
+    }> {
+        const allStocks = await this.getStocksInSector(sectorId, forceRefresh);
+
+        // Filter by F&O eligibility and price change >= 1%
+        const priceQualifyingStocks = allStocks.filter(s => s.isQualifying);
+
+        if (priceQualifyingStocks.length === 0) {
+            return { qualifyingStocks: [], watchlistStocks: [] };
+        }
+
+        // Get OI data and classify stocks
+        const { OI_CHANGE_THRESHOLD } = await import('@/lib/config');
+        const qualifyingStocks: StockData[] = [];
+        const watchlistStocks: StockData[] = [];
+
+        const stockIds = priceQualifyingStocks.map(s => s.id);
+        const stocksWithOI = await prisma.stock.findMany({
+            where: { id: { in: stockIds } },
+            select: { id: true, previousDayOI: true, lastOIUpdate: true },
+        });
+
+        type StockOIData = { id: string; previousDayOI: bigint | null; lastOIUpdate: Date | null };
+        const oiMap = new Map<string, StockOIData>(
+            stocksWithOI.map((s: StockOIData) => [s.id, s])
+        );
+
+        for (const stock of priceQualifyingStocks) {
+            const stockOI = oiMap.get(stock.id);
+            const currentOI = stock.openInterest || 0;
+            const previousOI = stockOI?.previousDayOI
+                ? Number(stockOI.previousDayOI)
+                : 0;
+
+            let oiChangePercent = 0;
+            if (previousOI > 0 && currentOI > 0) {
+                oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
+            }
+
+            const enrichedStock = {
+                ...stock,
+                previousOpenInterest: previousOI,
+                oiChangePercent: Math.round(oiChangePercent * 100) / 100,
+            };
+
+            const passesOIFilter = previousOI === 0 || Math.abs(oiChangePercent) >= OI_CHANGE_THRESHOLD;
+
+            if (passesOIFilter) {
+                qualifyingStocks.push(enrichedStock);
+            } else {
+                watchlistStocks.push(enrichedStock);
+            }
+        }
+
+        return { qualifyingStocks, watchlistStocks };
+    }
+
+    /**
      * Get qualifying stocks across all qualifying sectors
      */
     async getAllQualifyingStocks(qualifyingSectorIds: string[]): Promise<StockData[]> {

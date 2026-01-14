@@ -74,14 +74,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             });
         }
 
-        // Return live data
-        const stocks = await stockEngine.getQualifyingStocks(sectorId);
+        // Return live data with both qualifying and watchlist stocks
+        const { qualifyingStocks, watchlistStocks } = await stockEngine.getPriceQualifiedStocksWithOI(sectorId);
 
         return NextResponse.json({
             success: true,
             data: {
                 sector,
-                stocks,
+                stocks: qualifyingStocks,
+                watchlistStocks,
                 snapshotTime: null,
                 isFrozen: false,
                 timestamp: formatTimeIST(getCurrentIST()),

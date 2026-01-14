@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { StockTable } from '@/components/dashboard/StockTable';
+import { WatchlistTable } from '@/components/dashboard/WatchlistTable';
 import { SnapshotStatus } from '@/components/dashboard/SnapshotStatus';
 import { SectorData, StockData } from '@/types';
 
@@ -12,6 +13,7 @@ interface SectorStocksResponse {
     data: {
         sector: SectorData;
         stocks: StockData[];
+        watchlistStocks?: StockData[];
         snapshotTime: string | null;
         isFrozen: boolean;
         tradingDate?: string;
@@ -183,8 +185,11 @@ export default function SectorDetailClient() {
             {/* Stocks Table */}
             <StockTable stocks={stocks} sectorName={sector?.name} />
 
+            {/* Watchlist Table - Stocks with price >= 1% but OI < 7% */}
+            <WatchlistTable stocks={data?.watchlistStocks || []} sectorName={sector?.name} />
+
             {/* Footer Note */}
-            {!data?.isFrozen && stocks.length > 0 && (
+            {!data?.isFrozen && (stocks.length > 0 || (data?.watchlistStocks?.length || 0) > 0) && (
                 <p className="text-center text-sm text-gray-500 dark:text-gray-400">
                     Data refreshes every 30 seconds • Last updated: {data?.timestamp}
                 </p>
