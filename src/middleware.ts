@@ -1,10 +1,27 @@
-import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
 
-export default withAuth({
-    pages: {
-        signIn: '/login',
-    },
-});
+export async function middleware(request: NextRequest) {
+    const { pathname } = request.nextUrl;
+
+    // Allow demo pages without authentication
+    if (pathname.startsWith('/dashboard/demo') || pathname.startsWith('/api/sectors/demo')) {
+        return NextResponse.next();
+    }
+
+    // Check for authentication on protected routes
+    const token = await getToken({ req: request });
+
+    if (!token) {
+        // Redirect to login if not authenticated
+        const loginUrl = new URL('/login', request.url);
+        loginUrl.searchParams.set('callbackUrl', pathname);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    return NextResponse.next();
+}
 
 export const config = {
     matcher: ['/dashboard/:path*', '/api/sectors/:path*', '/api/snapshot/:path*'],
