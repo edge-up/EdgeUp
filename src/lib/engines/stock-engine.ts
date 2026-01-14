@@ -46,25 +46,35 @@ export class StockEngine {
             return [];
         }
 
-        // Get security IDs for Dhan API
+        // Get security IDs for Dhan API (both equity for prices and FNO for OI)
         const stocks = constituents.map((c: any) => c.stock);
-        const securityIds = stocks
+        const equitySecurityIds = stocks
             .filter((s: any) => s.dhanSecurityId)
             .map((s: any) => s.dhanSecurityId as string);
+        const fnoSecurityIds = stocks
+            .filter((s: any) => s.dhanFNOSecurityId && s.isFOEligible)
+            .map((s: any) => s.dhanFNOSecurityId as string);
 
         try {
-            // Fetch quotes from Dhan API
-            const quotes = securityIds.length > 0
-                ? await this.dhanClient.getQuotes(securityIds)
+            // Fetch equity quotes (for price data)
+            const equityQuotes = equitySecurityIds.length > 0
+                ? await this.dhanClient.getQuotes(equitySecurityIds)
                 : [];
-            const quoteMap = new Map(quotes.map(q => [q.securityId, q]));
+            const equityQuoteMap = new Map(equityQuotes.map(q => [q.securityId, q]));
+
+            // Fetch FNO quotes (for OI data)
+            const fnoQuotes = fnoSecurityIds.length > 0
+                ? await this.dhanClient.getQuotes(fnoSecurityIds)
+                : [];
+            const fnoQuoteMap = new Map(fnoQuotes.map(q => [q.securityId, q]));
 
             // Calculate stock data
             const stockData: StockData[] = stocks.map((stock: any) => {
-                const quote = stock.dhanSecurityId ? quoteMap.get(stock.dhanSecurityId) : null;
+                const equityQuote = stock.dhanSecurityId ? equityQuoteMap.get(stock.dhanSecurityId) : null;
+                const fnoQuote = stock.dhanFNOSecurityId ? fnoQuoteMap.get(stock.dhanFNOSecurityId) : null;
 
-                const ltp = quote?.ltp || 0;
-                const previousClose = quote?.previousClose || quote?.close || 0;
+                const ltp = equityQuote?.ltp || 0;
+                const previousClose = equityQuote?.previousClose || equityQuote?.close || 0;
                 const percentChange = calculatePercentChange(ltp, previousClose);
                 const direction = getDirection(percentChange);
                 const qualifying = isQualifying(percentChange) && stock.isFOEligible;
@@ -82,11 +92,11 @@ export class StockEngine {
                     direction,
                     isFOEligible: stock.isFOEligible,
                     isQualifying: qualifying,
-                    volume: quote?.volume,
-                    open: quote?.open,
-                    high: quote?.high,
-                    low: quote?.low,
-                    openInterest: quote?.openInterest,
+                    volume: equityQuote?.volume,
+                    open: equityQuote?.open,
+                    high: equityQuote?.high,
+                    low: equityQuote?.low,
+                    openInterest: fnoQuote?.openInterest || 0, // OI from FNO quote
                 };
             });
 
