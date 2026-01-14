@@ -63,10 +63,10 @@ export class SnapshotEngine {
 
             // Save sector snapshots
             for (const sector of sectors) {
-                // Get qualifying stocks for this sector
-                const stocks = sector.isQualifying
-                    ? await this.stockEngine.getQualifyingStocks(sector.id, true)
-                    : [];
+                // Get BOTH qualifying and watchlist stocks for this sector
+                const { qualifyingStocks, watchlistStocks } = sector.isQualifying
+                    ? await this.stockEngine.getPriceQualifiedStocksWithOI(sector.id, true)
+                    : { qualifyingStocks: [], watchlistStocks: [] };
 
                 await prisma.sectorSnapshot.upsert({
                     where: {
@@ -82,7 +82,7 @@ export class SnapshotEngine {
                         previousClose: sector.previousClose,
                         percentChange: sector.percentChange,
                         direction: sector.direction,
-                        qualifyingStocks: stocks.length,
+                        qualifyingStocks: qualifyingStocks.length,
                         isQualifying: sector.isQualifying,
                     },
                     update: {
@@ -90,7 +90,7 @@ export class SnapshotEngine {
                         previousClose: sector.previousClose,
                         percentChange: sector.percentChange,
                         direction: sector.direction,
-                        qualifyingStocks: stocks.length,
+                        qualifyingStocks: qualifyingStocks.length,
                         isQualifying: sector.isQualifying,
                     },
                 });
@@ -99,8 +99,8 @@ export class SnapshotEngine {
                     if (sector.direction === 'UP') bullishSectors++;
                     if (sector.direction === 'DOWN') bearishSectors++;
 
-                    // Save stock snapshots for qualifying sectors
-                    for (const stock of stocks) {
+                    // Save QUALIFYING stock snapshots
+                    for (const stock of qualifyingStocks) {
                         await prisma.stockSnapshot.upsert({
                             where: {
                                 snapshotId_stockId_sectorId: {
@@ -118,7 +118,7 @@ export class SnapshotEngine {
                                 percentChange: stock.percentChange,
                                 direction: stock.direction,
                                 isFOEligible: stock.isFOEligible,
-                                isQualifying: stock.isQualifying,
+                                isQualifying: true, // Fully qualifies
                                 volume: stock.volume ? BigInt(stock.volume) : null,
                                 openPrice: stock.open,
                                 highPrice: stock.high,
@@ -130,7 +130,7 @@ export class SnapshotEngine {
                                 percentChange: stock.percentChange,
                                 direction: stock.direction,
                                 isFOEligible: stock.isFOEligible,
-                                isQualifying: stock.isQualifying,
+                                isQualifying: true,
                                 volume: stock.volume ? BigInt(stock.volume) : null,
                                 openPrice: stock.open,
                                 highPrice: stock.high,
@@ -138,6 +138,46 @@ export class SnapshotEngine {
                             },
                         });
                         totalStocks++;
+                    }
+
+                    // Save WATCHLIST stock snapshots (price >= 1% but OI < 7%)
+                    for (const stock of watchlistStocks) {
+                        await prisma.stockSnapshot.upsert({
+                            where: {
+                                snapshotId_stockId_sectorId: {
+                                    snapshotId: snapshot.id,
+                                    stockId: stock.id,
+                                    sectorId: sector.id,
+                                },
+                            },
+                            create: {
+                                snapshotId: snapshot.id,
+                                stockId: stock.id,
+                                sectorId: sector.id,
+                                ltp: stock.ltp,
+                                previousClose: stock.previousClose,
+                                percentChange: stock.percentChange,
+                                direction: stock.direction,
+                                isFOEligible: stock.isFOEligible,
+                                isQualifying: false, // Watchlist - not fully qualifying
+                                volume: stock.volume ? BigInt(stock.volume) : null,
+                                openPrice: stock.open,
+                                highPrice: stock.high,
+                                lowPrice: stock.low,
+                            },
+                            update: {
+                                ltp: stock.ltp,
+                                previousClose: stock.previousClose,
+                                percentChange: stock.percentChange,
+                                direction: stock.direction,
+                                isFOEligible: stock.isFOEligible,
+                                isQualifying: false,
+                                volume: stock.volume ? BigInt(stock.volume) : null,
+                                openPrice: stock.open,
+                                highPrice: stock.high,
+                                lowPrice: stock.low,
+                            },
+                        });
                     }
                 }
             }
@@ -257,6 +297,49 @@ export class SnapshotEngine {
                 snapshotId,
                 sectorId,
                 isQualifying: true,
+            },
+            include: {
+                stock: true,
+            },
+            orderBy: {
+                percentChange: 'desc',
+            },
+        });
+
+        const sector = await prisma.sector.findUnique({
+            where: { id: sectorId },
+        });
+
+        return stockSnapshots.map(ss => ({
+            id: ss.stock.id,
+            symbol: ss.stock.symbol,
+            name: ss.stock.name,
+            sectorId: sectorId,
+            sectorName: sector?.name || '',
+            dhanSecurityId: ss.stock.dhanSecurityId,
+            ltp: ss.ltp,
+            previousClose: ss.previousClose,
+            percentChange: ss.percentChange,
+            direction: ss.direction as 'UP' | 'DOWN' | 'NEUTRAL',
+            isFOEligible: ss.isFOEligible,
+            isQualifying: ss.isQualifying,
+            volume: ss.volume ? Number(ss.volume) : undefined,
+            open: ss.openPrice || undefined,
+            high: ss.highPrice || undefined,
+            low: ss.lowPrice || undefined,
+        }));
+    }
+
+    /**
+     * Get WATCHLIST stocks from a snapshot for a specific sector
+     * These are stocks with price >= 1% but OI < 7%
+     */
+    async getSnapshotWatchlistStocks(snapshotId: string, sectorId: string): Promise<StockData[]> {
+        const stockSnapshots = await prisma.stockSnapshot.findMany({
+            where: {
+                snapshotId,
+                sectorId,
+                isQualifying: false, // Watchlist stocks
             },
             include: {
                 stock: true,

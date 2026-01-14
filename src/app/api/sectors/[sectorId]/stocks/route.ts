@@ -61,12 +61,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             }
 
             const stocks = await snapshotEngine.getSnapshotStocks(snapshot.id, sectorId);
+            const watchlistStocks = await snapshotEngine.getSnapshotWatchlistStocks(snapshot.id, sectorId);
 
             return NextResponse.json({
                 success: true,
                 data: {
                     sector,
                     stocks,
+                    watchlistStocks,
                     snapshotTime: snapshot.snapshotTime,
                     isFrozen: true,
                     tradingDate: snapshot.tradingDate,
