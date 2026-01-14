@@ -2,6 +2,20 @@ import { DhanQuote, DhanLTP, DhanInstrument, DhanHistoricalData } from '@/types'
 
 const DHAN_API_BASE = 'https://api.dhan.co/v2';
 
+// Rate limiting: Quote APIs allow only 1 request per second
+const QUOTE_API_RATE_LIMIT_MS = 1100; // 1.1 seconds to be safe
+let lastQuoteApiCallTime = 0;
+
+async function waitForQuoteRateLimit(): Promise<void> {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastQuoteApiCallTime;
+    if (timeSinceLastCall < QUOTE_API_RATE_LIMIT_MS) {
+        const waitTime = QUOTE_API_RATE_LIMIT_MS - timeSinceLastCall;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+    lastQuoteApiCallTime = Date.now();
+}
+
 interface DhanClientConfig {
     clientId: string;
     accessToken: string;
@@ -10,6 +24,7 @@ interface DhanClientConfig {
 /**
  * Dhan API Client for fetching market data
  * Documentation: https://dhanhq.co/docs/v2/
+ * Rate Limits: Quote APIs = 1 request/second
  */
 export class DhanClient {
     private clientId: string;
@@ -84,6 +99,9 @@ export class DhanClient {
 
             for (const chunk of chunks) {
                 const payload = this.buildSecurityPayload(chunk);
+
+                // Enforce rate limit: 1 request per second for Quote APIs
+                await waitForQuoteRateLimit();
 
                 const response = await fetch(`${DHAN_API_BASE}/marketfeed/quote`, {
                     method: 'POST',
