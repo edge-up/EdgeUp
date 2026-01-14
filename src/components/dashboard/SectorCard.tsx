@@ -4,11 +4,12 @@ import { SectorData } from '@/types';
 interface SectorCardProps {
     sector: SectorData;
     href?: string; // Optional custom href for demo mode
+    basePath?: string; // Base path for navigation (e.g., '/dashboard/live' or '/dashboard/sectors')
 }
 
-export function SectorCard({ sector, href }: SectorCardProps) {
+export function SectorCard({ sector, href, basePath = '/dashboard/sectors' }: SectorCardProps) {
     const isUp = sector.direction === 'UP';
-    const linkHref = href || `/dashboard/sectors/${sector.id}`;
+    const linkHref = href || `${basePath}/${sector.id}`;
 
     return (
         <Link href={linkHref}>
