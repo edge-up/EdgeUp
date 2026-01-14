@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Allow ALL demo routes without authentication
-    if (pathname.startsWith('/demo') || pathname.includes('/demo/') || pathname.includes('/api/sectors/demo')) {
+    if (pathname.startsWith('/demo') || pathname.startsWith('/api/sectors/demo')) {
         return NextResponse.next();
     }
 
