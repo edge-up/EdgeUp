@@ -123,6 +123,8 @@ export class SnapshotEngine {
                                 openPrice: stock.open,
                                 highPrice: stock.high,
                                 lowPrice: stock.low,
+                                openInterest: stock.openInterest ? BigInt(stock.openInterest) : null,
+                                previousOI: stock.previousOpenInterest ? BigInt(stock.previousOpenInterest) : null,
                             },
                             update: {
                                 ltp: stock.ltp,
@@ -135,6 +137,8 @@ export class SnapshotEngine {
                                 openPrice: stock.open,
                                 highPrice: stock.high,
                                 lowPrice: stock.low,
+                                openInterest: stock.openInterest ? BigInt(stock.openInterest) : null,
+                                previousOI: stock.previousOpenInterest ? BigInt(stock.previousOpenInterest) : null,
                             },
                         });
                         totalStocks++;
@@ -164,6 +168,8 @@ export class SnapshotEngine {
                                 openPrice: stock.open,
                                 highPrice: stock.high,
                                 lowPrice: stock.low,
+                                openInterest: stock.openInterest ? BigInt(stock.openInterest) : null,
+                                previousOI: stock.previousOpenInterest ? BigInt(stock.previousOpenInterest) : null,
                             },
                             update: {
                                 ltp: stock.ltp,
@@ -176,6 +182,8 @@ export class SnapshotEngine {
                                 openPrice: stock.open,
                                 highPrice: stock.high,
                                 lowPrice: stock.low,
+                                openInterest: stock.openInterest ? BigInt(stock.openInterest) : null,
+                                previousOI: stock.previousOpenInterest ? BigInt(stock.previousOpenInterest) : null,
                             },
                         });
                     }
@@ -310,24 +318,36 @@ export class SnapshotEngine {
             where: { id: sectorId },
         });
 
-        return stockSnapshots.map(ss => ({
-            id: ss.stock.id,
-            symbol: ss.stock.symbol,
-            name: ss.stock.name,
-            sectorId: sectorId,
-            sectorName: sector?.name || '',
-            dhanSecurityId: ss.stock.dhanSecurityId,
-            ltp: ss.ltp,
-            previousClose: ss.previousClose,
-            percentChange: ss.percentChange,
-            direction: ss.direction as 'UP' | 'DOWN' | 'NEUTRAL',
-            isFOEligible: ss.isFOEligible,
-            isQualifying: ss.isQualifying,
-            volume: ss.volume ? Number(ss.volume) : undefined,
-            open: ss.openPrice || undefined,
-            high: ss.highPrice || undefined,
-            low: ss.lowPrice || undefined,
-        }));
+        return stockSnapshots.map(ss => {
+            const currentOI = ss.openInterest ? Number(ss.openInterest) : 0;
+            const previousOI = ss.previousOI ? Number(ss.previousOI) : 0;
+            let oiChangePercent = 0;
+            if (previousOI > 0 && currentOI > 0) {
+                oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
+            }
+
+            return {
+                id: ss.stock.id,
+                symbol: ss.stock.symbol,
+                name: ss.stock.name,
+                sectorId: sectorId,
+                sectorName: sector?.name || '',
+                dhanSecurityId: ss.stock.dhanSecurityId,
+                ltp: ss.ltp,
+                previousClose: ss.previousClose,
+                percentChange: ss.percentChange,
+                direction: ss.direction as 'UP' | 'DOWN' | 'NEUTRAL',
+                isFOEligible: ss.isFOEligible,
+                isQualifying: ss.isQualifying,
+                volume: ss.volume ? Number(ss.volume) : undefined,
+                open: ss.openPrice || undefined,
+                high: ss.highPrice || undefined,
+                low: ss.lowPrice || undefined,
+                openInterest: currentOI,
+                previousOpenInterest: previousOI,
+                oiChangePercent: Math.round(oiChangePercent * 100) / 100,
+            };
+        });
     }
 
     /**
@@ -353,24 +373,36 @@ export class SnapshotEngine {
             where: { id: sectorId },
         });
 
-        return stockSnapshots.map(ss => ({
-            id: ss.stock.id,
-            symbol: ss.stock.symbol,
-            name: ss.stock.name,
-            sectorId: sectorId,
-            sectorName: sector?.name || '',
-            dhanSecurityId: ss.stock.dhanSecurityId,
-            ltp: ss.ltp,
-            previousClose: ss.previousClose,
-            percentChange: ss.percentChange,
-            direction: ss.direction as 'UP' | 'DOWN' | 'NEUTRAL',
-            isFOEligible: ss.isFOEligible,
-            isQualifying: ss.isQualifying,
-            volume: ss.volume ? Number(ss.volume) : undefined,
-            open: ss.openPrice || undefined,
-            high: ss.highPrice || undefined,
-            low: ss.lowPrice || undefined,
-        }));
+        return stockSnapshots.map(ss => {
+            const currentOI = ss.openInterest ? Number(ss.openInterest) : 0;
+            const previousOI = ss.previousOI ? Number(ss.previousOI) : 0;
+            let oiChangePercent = 0;
+            if (previousOI > 0 && currentOI > 0) {
+                oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
+            }
+
+            return {
+                id: ss.stock.id,
+                symbol: ss.stock.symbol,
+                name: ss.stock.name,
+                sectorId: sectorId,
+                sectorName: sector?.name || '',
+                dhanSecurityId: ss.stock.dhanSecurityId,
+                ltp: ss.ltp,
+                previousClose: ss.previousClose,
+                percentChange: ss.percentChange,
+                direction: ss.direction as 'UP' | 'DOWN' | 'NEUTRAL',
+                isFOEligible: ss.isFOEligible,
+                isQualifying: ss.isQualifying,
+                volume: ss.volume ? Number(ss.volume) : undefined,
+                open: ss.openPrice || undefined,
+                high: ss.highPrice || undefined,
+                low: ss.lowPrice || undefined,
+                openInterest: currentOI,
+                previousOpenInterest: previousOI,
+                oiChangePercent: Math.round(oiChangePercent * 100) / 100,
+            };
+        });
     }
 
     /**
