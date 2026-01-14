@@ -6,13 +6,15 @@ interface SnapshotStatusProps {
 
 export function SnapshotStatus({ isFrozen, snapshotTime, tradingDate }: SnapshotStatusProps) {
     const formatTime = (isoString: string) => {
+        // The database stores time in IST but without timezone info
+        // When parsing, we need to treat it as IST, not UTC
         const date = new Date(isoString);
-        return date.toLocaleTimeString('en-IN', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-            timeZone: 'Asia/Kolkata',
-        });
+        // Extract UTC components which actually represent IST
+        const hours = date.getUTCHours();
+        const minutes = date.getUTCMinutes();
+        const ampm = hours >= 12 ? 'pm' : 'am';
+        const displayHours = hours % 12 || 12;
+        return `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
     };
 
     const formatDate = (dateString: string) => {
