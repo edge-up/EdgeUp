@@ -5,8 +5,14 @@ import { getToken } from 'next-auth/jwt';
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Allow ALL demo routes without authentication
-    if (pathname.startsWith('/demo') || pathname.startsWith('/api/sectors/demo')) {
+    // Allow public routes without authentication
+    if (
+        pathname.startsWith('/demo') ||
+        pathname.startsWith('/api/sectors/demo') ||
+        pathname.startsWith('/login') ||
+        pathname.startsWith('/register') ||
+        pathname.startsWith('/api/auth')
+    ) {
         return NextResponse.next();
     }
 
