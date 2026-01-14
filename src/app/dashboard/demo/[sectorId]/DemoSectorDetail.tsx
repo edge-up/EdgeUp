@@ -67,7 +67,7 @@ export default function DemoSectorDetail() {
                 </div>
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-2">Unable to Load Demo Stocks</h2>
                 <p className="text-slate-500 dark:text-slate-400 mb-6">{error}</p>
-                <Link href="/dashboard/demo" className="btn-primary">
+                <Link href="/demo" className="btn-primary">
                     ← Back to Demo Dashboard
                 </Link>
             </div>
@@ -89,7 +89,7 @@ export default function DemoSectorDetail() {
                     <div className="flex-1">
                         <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Demo Mode - Sample stock data</span>
                     </div>
-                    <Link href="/dashboard/demo" className="btn-ghost text-sm">
+                    <Link href="/demo" className="btn-ghost text-sm">
                         ← Back to Demo Dashboard
                     </Link>
                 </div>

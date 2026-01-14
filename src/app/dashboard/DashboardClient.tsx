@@ -188,7 +188,7 @@ export default function DashboardClient() {
                                     View the demo dashboard with sample market data to see EdgeUp in action!
                                 </p>
                                 <a
-                                    href="/dashboard/demo"
+                                    href="/demo"
                                     className="btn-primary inline-flex items-center gap-2"
                                 >
                                     <span>🚀</span>

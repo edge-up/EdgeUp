@@ -172,7 +172,7 @@ export default function LoginPage() {
                 {/* Demo link */}
                 <p className="mt-6 text-center text-sm text-slate-500 dark:text-slate-400">
                     Want to explore first?{' '}
-                    <Link href="/dashboard/demo" className="text-primary-500 hover:text-primary-400 font-medium transition-colors">
+                    <Link href="/demo" className="text-primary-500 hover:text-primary-400 font-medium transition-colors">
                         View Demo →
                     </Link>
                 </p>

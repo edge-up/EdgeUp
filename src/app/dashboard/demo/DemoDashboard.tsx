@@ -191,7 +191,7 @@ export default function DemoDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {bullishSectors.map((sector, index) => (
                             <div key={sector.id} className="animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
-                                <SectorCard sector={sector} href={`/dashboard/demo/${sector.id}`} />
+                                <SectorCard sector={sector} href={`/demo/${sector.id}`} />
                             </div>
                         ))}
                     </div>
@@ -209,7 +209,7 @@ export default function DemoDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {bearishSectors.map((sector, index) => (
                             <div key={sector.id} className="animate-fade-in-up" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
-                                <SectorCard sector={sector} href={`/dashboard/demo/${sector.id}`} />
+                                <SectorCard sector={sector} href={`/demo/${sector.id}`} />
                             </div>
                         ))}
                     </div>
