@@ -229,6 +229,9 @@ export class DhanClient {
             } else if (id.startsWith('NSE_FNO_')) {
                 category = 'NSE_FNO';
                 cleanId = id.replace('NSE_FNO_', '');
+            } else if (id.startsWith('IDX_I_')) {
+                category = 'IDX_I';
+                cleanId = id.replace('IDX_I_', '');
             } else if (id.startsWith('IDX_')) {
                 category = 'IDX_I';
                 cleanId = id.replace('IDX_', '');
@@ -281,23 +284,28 @@ export class DhanClient {
 
             Object.entries(segments).forEach(([segment, securities]) => {
                 Object.entries(securities).forEach(([secId, info]) => {
-                    const prevClose = info.prev_close || info.close;
-                    const change = info.last_price - prevClose;
+                    // Handle both direct close and ohlc.close formats
+                    const rawInfo = info as any;
+                    const ohlc = rawInfo.ohlc || {};
+                    const closePrice = ohlc.close || rawInfo.close || 0;
+                    const prevClose = rawInfo.prev_close || closePrice;
+                    const lastPrice = rawInfo.last_price || 0;
+                    const change = lastPrice - prevClose;
                     const changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
 
                     results.push({
                         securityId: `${segment}_${secId}`,
-                        ltp: info.last_price,
-                        open: info.open,
-                        high: info.high,
-                        low: info.low,
-                        close: info.close,
-                        volume: info.volume,
+                        ltp: lastPrice,
+                        open: ohlc.open || rawInfo.open || 0,
+                        high: ohlc.high || rawInfo.high || 0,
+                        low: ohlc.low || rawInfo.low || 0,
+                        close: closePrice,
+                        volume: rawInfo.volume || 0,
                         previousClose: prevClose,
                         change,
                         changePercent,
-                        lastTradeTime: info.last_trade_time || Date.now(),
-                        openInterest: (info as any).oi || 0,
+                        lastTradeTime: rawInfo.last_trade_time || Date.now(),
+                        openInterest: rawInfo.oi || 0,
                     });
                 });
             });
