@@ -29,30 +29,36 @@ export function SnapshotStatus({ isFrozen, snapshotTime, tradingDate }: Snapshot
 
     return (
         <div className={`
-      inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium
-      ${isFrozen
-                ? 'bg-bullish-500/20 text-bullish-600 dark:text-bullish-500 border border-bullish-500/30'
-                : 'bg-primary-500/20 text-primary-600 dark:text-primary-400 border border-primary-500/30'
+            inline-flex items-center gap-2.5 px-4 py-2.5 rounded-full text-sm font-medium
+            transition-all duration-300
+            ${isFrozen
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 shadow-sm shadow-emerald-500/10'
+                : 'bg-primary-500/15 text-primary-600 dark:text-primary-400 border border-primary-500/25 shadow-sm shadow-primary-500/10'
             }
-    `}>
+        `}>
             {isFrozen ? (
                 <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                    <span>
-                        Snapshot Frozen
-                        {snapshotTime && ` at ${formatTime(snapshotTime)}`}
-                        {tradingDate && ` • ${formatDate(tradingDate)}`}
+                    {/* Lock icon */}
+                    <div className="relative">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <span className="font-semibold">
+                        Snapshot
+                        {snapshotTime && <span className="font-normal"> at {formatTime(snapshotTime)}</span>}
+                        {tradingDate && <span className="font-normal text-emerald-500/70"> • {formatDate(tradingDate)}</span>}
                     </span>
                 </>
             ) : (
                 <>
-                    <span className="relative flex h-2 w-2">
+                    {/* Live pulse */}
+                    <span className="relative flex h-2.5 w-2.5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
                     </span>
-                    <span>Live Data • Snapshot at 09:25 AM</span>
+                    <span className="font-semibold">Live Data</span>
+                    <span className="text-primary-500/70">• Snapshot at 09:25 AM</span>
                 </>
             )}
         </div>
