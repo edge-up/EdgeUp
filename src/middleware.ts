@@ -3,18 +3,10 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-    const { pathname } = request.nextUrl;
-
-    // Allow demo pages without authentication
-    if (pathname.startsWith('/dashboard/demo') || pathname.startsWith('/api/sectors/demo')) {
-        return NextResponse.next();
-    }
-
-    // Check for authentication on protected routes
     const token = await getToken({ req: request });
 
     if (!token) {
-        // Redirect to login if not authenticated
+        const { pathname } = request.nextUrl;
         const loginUrl = new URL('/login', request.url);
         loginUrl.searchParams.set('callbackUrl', pathname);
         return NextResponse.redirect(loginUrl);
@@ -24,5 +16,12 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ['/dashboard/:path*', '/api/sectors/:path*', '/api/snapshot/:path*'],
+    matcher: [
+        // Protect dashboard routes EXCEPT demo
+        '/dashboard/((?!demo).*)',
+        '/dashboard',
+        // Protect API routes EXCEPT demo
+        '/api/sectors/((?!demo).*)',
+        '/api/snapshot/:path*',
+    ],
 };
