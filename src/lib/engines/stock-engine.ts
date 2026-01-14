@@ -56,17 +56,15 @@ export class StockEngine {
             .map((s: any) => s.dhanFNOSecurityId as string);
 
         try {
-            // Fetch equity quotes (for price data)
-            const equityQuotes = equitySecurityIds.length > 0
-                ? await this.dhanClient.getQuotes(equitySecurityIds)
+            // Fetch ALL quotes in a SINGLE API call (combine equity + FNO to avoid rate limits)
+            const allSecurityIds = [...equitySecurityIds, ...fnoSecurityIds];
+            const allQuotes = allSecurityIds.length > 0
+                ? await this.dhanClient.getQuotes(allSecurityIds)
                 : [];
-            const equityQuoteMap = new Map(equityQuotes.map(q => [q.securityId, q]));
 
-            // Fetch FNO quotes (for OI data)
-            const fnoQuotes = fnoSecurityIds.length > 0
-                ? await this.dhanClient.getQuotes(fnoSecurityIds)
-                : [];
-            const fnoQuoteMap = new Map(fnoQuotes.map(q => [q.securityId, q]));
+            // Separate into equity and FNO maps
+            const equityQuoteMap = new Map(allQuotes.filter(q => q.securityId.startsWith('NSE_EQ')).map(q => [q.securityId, q]));
+            const fnoQuoteMap = new Map(allQuotes.filter(q => q.securityId.startsWith('NSE_FNO')).map(q => [q.securityId, q]));
 
             // Calculate stock data
             const stockData: StockData[] = stocks.map((stock: any) => {
