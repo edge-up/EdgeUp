@@ -17,12 +17,13 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
     matcher: [
-        // Only protect these specific dashboard routes (NOT demo)
+        // Dashboard routes (NOT /dashboard/demo)
         '/dashboard/live/:path*',
         '/dashboard/sectors/:path*',
-        // Protect non-demo API routes
+        // API routes (NOT /api/sectors/demo*)
         '/api/sectors/live/:path*',
-        '/api/sectors/:sectorId((?!demo$).*)/stocks',
         '/api/snapshot/:path*',
+        // Individual sector stocks endpoint (NOT demo)
+        '/api/sectors/:sectorId/stocks',
     ],
 };
