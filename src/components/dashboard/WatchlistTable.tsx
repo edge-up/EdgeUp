@@ -1,6 +1,7 @@
 'use client';
 
 import { StockData } from '@/types';
+import { OI_CHANGE_THRESHOLD } from '@/lib/config';
 
 interface WatchlistTableProps {
     stocks: StockData[];
@@ -22,7 +23,7 @@ export function WatchlistTable({ stocks }: WatchlistTableProps) {
                             Watchlist
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                            {stocks.length} {stocks.length === 1 ? 'stock' : 'stocks'} with price ≥1% but OI &lt;7%
+                            {stocks.length} {stocks.length === 1 ? 'stock' : 'stocks'} with price ≥1% but OI &lt;{OI_CHANGE_THRESHOLD}%
                         </p>
                     </div>
                     <div className="hidden sm:block px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25">
@@ -117,7 +118,7 @@ export function WatchlistTable({ stocks }: WatchlistTableProps) {
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
-                                            OI &lt; 7%
+                                            OI &lt; {OI_CHANGE_THRESHOLD}%
                                         </span>
                                     </td>
                                 </tr>

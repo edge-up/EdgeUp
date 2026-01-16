@@ -144,7 +144,7 @@ export class SnapshotEngine {
                         totalStocks++;
                     }
 
-                    // Save WATCHLIST stock snapshots (price >= 1% but OI < 7%)
+                    // Save WATCHLIST stock snapshots (price >= 1% but OI < threshold)
                     for (const stock of watchlistStocks) {
                         await prisma.stockSnapshot.upsert({
                             where: {
@@ -352,7 +352,7 @@ export class SnapshotEngine {
 
     /**
      * Get WATCHLIST stocks from a snapshot for a specific sector
-     * These are stocks with price >= 1% but OI < 7%
+     * These are stocks with price >= 1% but OI < configured threshold
      */
     async getSnapshotWatchlistStocks(snapshotId: string, sectorId: string): Promise<StockData[]> {
         const stockSnapshots = await prisma.stockSnapshot.findMany({

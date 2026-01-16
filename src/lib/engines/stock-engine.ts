@@ -195,7 +195,7 @@ export class StockEngine {
     /**
      * Get all price-qualifying stocks with OI data (for watchlist display)
      * Returns stocks that pass price filter (≥1%) with their OI change info
-     * Users can see why stocks don't fully qualify (OI < 7%)
+     * Users can see why stocks don't fully qualify (OI < threshold)
      */
     async getPriceQualifiedStocksWithOI(sectorId: string, forceRefresh: boolean = false): Promise<{
         qualifyingStocks: StockData[];

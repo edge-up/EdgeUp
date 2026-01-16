@@ -185,7 +185,7 @@ export default function SectorDetailClient() {
             {/* Stocks Table */}
             <StockTable stocks={stocks} sectorName={sector?.name} />
 
-            {/* Watchlist Table - Stocks with price >= 1% but OI < 7% */}
+            {/* Watchlist Table - Stocks with price >= 1% but OI < threshold */}
             <WatchlistTable stocks={data?.watchlistStocks || []} />
 
             {/* Footer Note */}
