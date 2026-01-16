@@ -12,7 +12,7 @@ import {
 
 /**
  * Snapshot Engine
- * Handles freezing and persisting market data at 09:25 AM IST
+ * Handles freezing and persisting market data at 09:30 AM IST
  */
 export class SnapshotEngine {
     private sectorEngine = getSectorEngine();
@@ -20,7 +20,7 @@ export class SnapshotEngine {
 
     /**
      * Create a new snapshot at the current time
-     * This should be called at 09:25 AM IST
+     * This should be called at 09:30 AM IST
      */
     async createSnapshot(): Promise<SnapshotData> {
         const tradingDate = getTradingDate();

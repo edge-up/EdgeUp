@@ -4,7 +4,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
     title: 'EdgeUp | NSE Momentum Analytics',
-    description: 'Identify early-morning NSE sector momentum and qualifying F&O stocks before 9:25 AM IST',
+    description: 'Identify early-morning NSE sector momentum and qualifying F&O stocks before 9:30 AM IST',
     keywords: ['NSE', 'stock market', 'momentum', 'F&O', 'intraday', 'sector analysis'],
     authors: [{ name: 'EdgeUp' }],
     viewport: 'width=device-width, initial-scale=1',

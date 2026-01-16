@@ -25,8 +25,8 @@ function parseTimeToMinutes(timeStr: string): number {
 export const ANALYSIS_START_TIME = process.env.NEXT_PUBLIC_ANALYSIS_START_TIME || '09:15';
 export const ANALYSIS_START_MINUTES = parseTimeToMinutes(ANALYSIS_START_TIME);
 
-/** Analysis window end time (default: 9:25 AM IST) */
-export const ANALYSIS_END_TIME = process.env.NEXT_PUBLIC_ANALYSIS_END_TIME || '09:25';
+/** Analysis window end time (default: 9:30 AM IST) */
+export const ANALYSIS_END_TIME = process.env.NEXT_PUBLIC_ANALYSIS_END_TIME || '09:30';
 export const ANALYSIS_END_MINUTES = parseTimeToMinutes(ANALYSIS_END_TIME);
 
 /** Dashboard refresh interval in milliseconds (default: 30 seconds) */

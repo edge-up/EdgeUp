@@ -67,7 +67,7 @@ export async function GET() {
                 snapshotTime: null,
                 isFrozen: false,
                 timestamp: formatTimeIST(getCurrentIST()),
-                message: 'Live data - snapshot will freeze at 09:25 AM IST',
+                message: 'Live data - snapshot will freeze at 09:30 AM IST',
             },
         });
     } catch (error) {

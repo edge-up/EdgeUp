@@ -58,7 +58,7 @@ export function SnapshotStatus({ isFrozen, snapshotTime, tradingDate }: Snapshot
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary-500"></span>
                     </span>
                     <span className="font-semibold">Live Data</span>
-                    <span className="text-primary-500/70">• Snapshot at 09:25 AM</span>
+                    <span className="text-primary-500/70">• Snapshot at 09:30 AM</span>
                 </>
             )}
         </div>

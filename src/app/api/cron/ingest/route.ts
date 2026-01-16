@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        // Check if snapshot should be created (after 09:25 AM)
+        // Check if snapshot should be created (after 09:30 AM)
         if (isAfterSnapshotTime()) {
             // Check if snapshot already exists
             const existingSnapshot = await prisma.snapshot.findUnique({
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         // Before snapshot time - just log that we're monitoring
         return NextResponse.json({
             success: true,
-            message: 'Monitoring market data, waiting for 09:25 AM',
+            message: 'Monitoring market data, waiting for 09:30 AM',
             action: 'monitoring',
         });
     } catch (error) {

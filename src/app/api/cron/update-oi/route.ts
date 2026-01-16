@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  * Runs at 6:30 AM IST (Mon-Fri) before market opens
  * 
  * Purpose: Fetch previous day's closing OI for ALL F&O stocks
- * This enables accurate OI change calculation during 9:15-9:25 AM analysis
+ * This enables accurate OI change calculation during 9:15-9:30 AM analysis
  */
 export async function GET(request: NextRequest) {
     // Verify cron secret for security

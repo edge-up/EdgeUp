@@ -23,7 +23,7 @@ export function getTradingDate(): Date {
 }
 
 /**
- * Check if current time is before snapshot time (09:25 AM IST)
+ * Check if current time is before snapshot time (09:30 AM IST)
  */
 export function isBeforeSnapshotTime(config: MarketConfig = DEFAULT_MARKET_CONFIG): boolean {
     const now = getCurrentIST();
@@ -33,7 +33,7 @@ export function isBeforeSnapshotTime(config: MarketConfig = DEFAULT_MARKET_CONFI
 }
 
 /**
- * Check if current time is after snapshot time (09:25 AM IST)
+ * Check if current time is after snapshot time (09:30 AM IST)
  */
 export function isAfterSnapshotTime(config: MarketConfig = DEFAULT_MARKET_CONFIG): boolean {
     return !isBeforeSnapshotTime(config);
@@ -60,7 +60,7 @@ export function isMarketOpen(config: MarketConfig = DEFAULT_MARKET_CONFIG): bool
 }
 
 /**
- * Check if we're in the analysis window (09:15 - 09:25 AM IST)
+ * Check if we're in the analysis window (09:15 - 09:30 AM IST)
  */
 export function isInAnalysisWindow(config: MarketConfig = DEFAULT_MARKET_CONFIG): boolean {
     const now = getCurrentIST();

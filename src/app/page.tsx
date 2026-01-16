@@ -54,7 +54,7 @@ export default function Home() {
 
                     <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
                         Identify <span className="text-emerald-500 font-semibold">early-morning</span> NSE sector momentum
-                        and qualifying <span className="text-primary-500 font-semibold">F&O stocks</span> before 9:25 AM IST
+                        and qualifying <span className="text-primary-500 font-semibold">F&O stocks</span> before 9:30 AM IST
                     </p>
                 </div>
 
@@ -87,7 +87,7 @@ export default function Home() {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             ),
-                            title: '9:25 AM Snapshot',
+                            title: '9:30 AM Snapshot',
                             description: 'Automatic freeze and persist for daily reference',
                             color: 'rose',
                         },

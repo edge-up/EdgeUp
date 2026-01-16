@@ -117,7 +117,7 @@ export class StockEngine {
      * 1. Stock is in NSE F&O list (isFOEligible)
      * 2. Stock price change ≥ +1% or ≤ -1%
      * 3. OI change ≥ 7% (from previous day)
-     * 4. Time window: 9:15–9:25 AM IST (optional, for live trading)
+     * 4. Time window: 9:15–9:30 AM IST (optional, for live trading)
      */
     async getQualifyingStocks(sectorId: string, forceRefresh: boolean = false): Promise<StockData[]> {
         const allStocks = await this.getStocksInSector(sectorId, forceRefresh);
@@ -171,7 +171,7 @@ export class StockEngine {
             }
         }
 
-        // Step 4: Time window check (9:15-9:25 AM IST)
+        // Step 4: Time window check (9:15-9:30 AM IST)
         // Note: This is commented out to allow testing outside market hours
         // Uncomment for production use during live trading
         /*
@@ -181,7 +181,7 @@ export class StockEngine {
         const minutes = istTime.getMinutes();
         const currentTimeMinutes = hours * 60 + minutes;
         const startTimeMinutes = 9 * 60 + 15; // 9:15 AM
-        const endTimeMinutes = 9 * 60 + 25;   // 9:25 AM
+        const endTimeMinutes = 9 * 60 + 30;   // 9:30 AM
         const isWithinTimeWindow = currentTimeMinutes >= startTimeMinutes && currentTimeMinutes <= endTimeMinutes;
         
         if (!isWithinTimeWindow) {

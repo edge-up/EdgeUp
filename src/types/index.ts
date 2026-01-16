@@ -155,7 +155,7 @@ export interface LiveDataResponse {
 // ================================
 
 export interface MarketConfig {
-    snapshotTime: { hour: number; minute: number }; // 09:25 IST
+    snapshotTime: { hour: number; minute: number }; // 09:30 IST
     marketOpenTime: { hour: number; minute: number }; // 09:15 IST
     marketCloseTime: { hour: number; minute: number }; // 15:30 IST
     timezone: string; // "Asia/Kolkata"
@@ -163,7 +163,7 @@ export interface MarketConfig {
 }
 
 export const DEFAULT_MARKET_CONFIG: MarketConfig = {
-    snapshotTime: { hour: 9, minute: 25 },
+    snapshotTime: { hour: 9, minute: 30 },
     marketOpenTime: { hour: 9, minute: 15 },
     marketCloseTime: { hour: 15, minute: 30 },
     timezone: 'Asia/Kolkata',
