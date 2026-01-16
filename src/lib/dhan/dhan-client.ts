@@ -176,25 +176,37 @@ export class DhanClient {
         try {
             const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
+            // Extract just the security ID (remove prefix if present)
+            const cleanSecurityId = securityId.replace(/^(NSE_EQ_|NSE_FNO_|IDX_)/, '');
+
+            // Determine exchange segment (NSE for equity, NFO for futures)
+            const exchange = exchangeSegment.startsWith('NSE_FNO') ? 'NFO' : 'NSE';
+
+            const requestBody = {
+                securityId: cleanSecurityId,
+                exchangeSegment: exchange,
+                instrument: 'EQUITY',
+                expiryCode: 0,
+                fromDate: formatDate(fromDate),
+                toDate: formatDate(toDate),
+            };
+
+            console.log('🔍 Dhan Historical API Request:', JSON.stringify(requestBody, null, 2));
+
             const response = await fetch(`${DHAN_API_BASE}/charts/historical`, {
                 method: 'POST',
                 headers: this.headers,
-                body: JSON.stringify({
-                    securityId: securityId.replace(/^(NSE_EQ_|NSE_FNO_|IDX_)/, ''),
-                    exchangeSegment,
-                    instrument: 'EQUITY',
-                    expiryCode: 0,
-                    fromDate: formatDate(fromDate),
-                    toDate: formatDate(toDate),
-                }),
+                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {
                 const error = await response.json();
+                console.error('❌ Dhan Historical API Error Response:', error);
                 throw new Error(`Dhan API Error: ${error.errorMessage || response.statusText}`);
             }
 
             const data = await response.json();
+            console.log(`✅ Dhan Historical API Success: ${data?.length || 0} days returned`);
             return this.parseHistoricalResponse(data);
         } catch (error) {
             console.error('DhanClient.getHistoricalData error:', error);
