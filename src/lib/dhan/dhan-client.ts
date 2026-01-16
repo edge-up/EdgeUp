@@ -425,22 +425,35 @@ export class DhanClient {
     }
 
     private parseHistoricalResponse(data: Record<string, unknown>): DhanHistoricalData[] {
-        if (!data.data || !Array.isArray(data.data)) return [];
+        // Dhan intraday API can return data in two formats:
+        // 1. Direct response with OHLC fields (intraday endpoint)
+        // 2. Nested under data.data (historical endpoint - if it exists)
 
-        return (data.data as Array<{
-            open: number;
-            high: number;
-            low: number;
-            close: number;
-            volume: number;
-            start_Time: string;
-        }>).map(candle => ({
-            open: candle.open,
-            high: candle.high,
-            low: candle.low,
-            close: candle.close,
-            volume: candle.volume,
-            timestamp: candle.start_Time,
+        let candleData: any[] = [];
+
+        // Check if data is directly an array
+        if (Array.isArray(data)) {
+            candleData = data;
+        }
+        // Check if data is nested under data.data
+        else if (data.data && Array.isArray(data.data)) {
+            candleData = data.data;
+        }
+        // Check if it's a single OHLC object (wrap in array)
+        else if (data.open !== undefined && data.high !== undefined) {
+            candleData = [data];
+        }
+
+        if (candleData.length === 0) return [];
+
+        return candleData.map((candle: any) => ({
+            open: candle.open || 0,
+            high: candle.high || 0,
+            low: candle.low || 0,
+            close: candle.close || 0,
+            volume: candle.volume || 0,
+            // Handle both 'timestamp' and 'start_Time' field names
+            timestamp: candle.timestamp || candle.start_Time || new Date().toISOString(),
         }));
     }
 
