@@ -78,7 +78,7 @@ export default function Home() {
                                 </svg>
                             ),
                             title: 'F&O + OI Filtering',
-                            description: 'Show stocks with ≥7% Open Interest change',
+                            description: 'Stocks with ≥3% Open Interest change + breakout signals',
                             color: 'primary',
                         },
                         {
