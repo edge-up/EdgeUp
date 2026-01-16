@@ -187,23 +187,50 @@ export class DhanClient {
                 toDate: formatDate(toDate),
             };
 
-            console.log('🔍 Dhan Intraday API Request:', JSON.stringify(requestBody, null, 2));
+            console.log('🔍 Dhan Intraday API Call Details:');
+            console.log('  Original securityId:', securityId);
+            console.log('  Cleaned securityId:', cleanSecurityId);
+            console.log('  Exchange segment:', exchangeSegment);
+            console.log('  Date range:', formatDate(fromDate), 'to', formatDate(toDate));
+            console.log('  Full request body:', JSON.stringify(requestBody, null, 2));
+            console.log('  Headers:', {
+                'Content-Type': 'application/json',
+                'access-token': (this.headers as any)['access-token'] ? '***PRESENT***' : '***MISSING***'
+            });
 
             // Use /charts/intraday endpoint (NOT /charts/historical)
-            const response = await fetch(`${DHAN_API_BASE}/charts/intraday`, {
+            const url = `${DHAN_API_BASE}/charts/intraday`;
+            console.log('  API URL:', url);
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: this.headers,
                 body: JSON.stringify(requestBody),
             });
 
+            console.log('📡 Response status:', response.status, response.statusText);
+
             if (!response.ok) {
-                const error = await response.json();
-                console.error('❌ Dhan Intraday API Error Response:', error);
+                const errorText = await response.text();
+                console.error('❌ Dhan API Error Response (raw):', errorText);
+
+                let error;
+                try {
+                    error = JSON.parse(errorText);
+                } catch {
+                    error = { errorMessage: errorText };
+                }
+
+                console.error('❌ Dhan API Error (parsed):', error);
                 throw new Error(`Dhan API Error: ${error.errorMessage || response.statusText}`);
             }
 
-            const data = await response.json();
-            console.log(`✅ Dhan Intraday API Success: Received response`);
+            const responseText = await response.text();
+            console.log('✅ Dhan API Success Response (raw):', responseText.substring(0, 500));
+
+            const data = JSON.parse(responseText);
+            console.log('✅ Dhan API Success Response (parsed type):', typeof data, Array.isArray(data) ? 'array' : 'object');
+
             return this.parseHistoricalResponse(data);
         } catch (error) {
             console.error('DhanClient.getHistoricalData error:', error);
