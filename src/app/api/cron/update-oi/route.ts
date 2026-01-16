@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db/prisma';
 import { getDhanClient } from '@/lib/dhan/dhan-client';
+import { getTradingDate } from '@/lib/utils/market-time';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +24,30 @@ export async function GET(request: NextRequest) {
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Check if today is a trading day
+    const today = getTradingDate();
+    const calendar = await prisma.tradingCalendar.findUnique({
+        where: { date: today },
+    });
+
+    if (calendar?.isHoliday) {
+        return NextResponse.json({
+            success: true,
+            message: `Today is a holiday: ${calendar.holidayName}. Skipping OI update.`,
+            action: 'skipped',
+        });
+    }
+
+    // Check weekend
+    const dayOfWeek = today.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        return NextResponse.json({
+            success: true,
+            message: `Weekend (${dayOfWeek === 0 ? 'Sunday' : 'Saturday'}). Skipping OI update.`,
+            action: 'skipped',
+        });
     }
 
     console.log('🕕 Starting pre-market OI update...');
