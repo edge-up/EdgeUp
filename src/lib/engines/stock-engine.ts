@@ -210,11 +210,8 @@ export class StockEngine {
             return { qualifyingStocks: [], watchlistStocks: [] };
         }
 
-        // TEMPORARY: Disabled previous day OHLC enrichment due to Dhan API limitations
-        // The Dhan historical API endpoint is not working with current parameters
-        // TODO: Find correct Dhan API endpoint for historical data or use alternative data source
-        // const enrichedStocks = await this.enrichWithPreviousDayOHLC(priceQualifyingStocks);
-        const enrichedStocks = priceQualifyingStocks; // Skip enrichment for now
+        // Enrich stocks with previous day OHLC data for breakout detection
+        const enrichedStocks = await this.enrichWithPreviousDayOHLC(priceQualifyingStocks);
 
         // Get OI data and classify stocks
         const { OI_CHANGE_THRESHOLD } = await import('@/lib/config');

@@ -176,24 +176,21 @@ export class DhanClient {
         try {
             const formatDate = (d: Date) => d.toISOString().split('T')[0];
 
-            // Extract just the security ID (remove prefix if present)
+            // Extract just the security ID (ISIN code)
             const cleanSecurityId = securityId.replace(/^(NSE_EQ_|NSE_FNO_|IDX_)/, '');
-
-            // Determine exchange segment (NSE for equity, NFO for futures)
-            const exchange = exchangeSegment.startsWith('NSE_FNO') ? 'NFO' : 'NSE';
 
             const requestBody = {
                 securityId: cleanSecurityId,
-                exchangeSegment: exchange,
+                exchangeSegment: exchangeSegment, // Keep as NSE_EQ or NSE_FNO
                 instrument: 'EQUITY',
-                expiryCode: 0,
                 fromDate: formatDate(fromDate),
                 toDate: formatDate(toDate),
             };
 
-            console.log('🔍 Dhan Historical API Request:', JSON.stringify(requestBody, null, 2));
+            console.log('🔍 Dhan Intraday API Request:', JSON.stringify(requestBody, null, 2));
 
-            const response = await fetch(`${DHAN_API_BASE}/charts/historical`, {
+            // Use /charts/intraday endpoint (NOT /charts/historical)
+            const response = await fetch(`${DHAN_API_BASE}/charts/intraday`, {
                 method: 'POST',
                 headers: this.headers,
                 body: JSON.stringify(requestBody),
@@ -201,12 +198,12 @@ export class DhanClient {
 
             if (!response.ok) {
                 const error = await response.json();
-                console.error('❌ Dhan Historical API Error Response:', error);
+                console.error('❌ Dhan Intraday API Error Response:', error);
                 throw new Error(`Dhan API Error: ${error.errorMessage || response.statusText}`);
             }
 
             const data = await response.json();
-            console.log(`✅ Dhan Historical API Success: ${data?.length || 0} days returned`);
+            console.log(`✅ Dhan Intraday API Success: Received response`);
             return this.parseHistoricalResponse(data);
         } catch (error) {
             console.error('DhanClient.getHistoricalData error:', error);
