@@ -210,12 +210,15 @@ export class StockEngine {
             return { qualifyingStocks: [], watchlistStocks: [] };
         }
 
+        // Enrich stocks with previous day OHLC data for breakout detection
+        const enrichedStocks = await this.enrichWithPreviousDayOHLC(priceQualifyingStocks);
+
         // Get OI data and classify stocks
         const { OI_CHANGE_THRESHOLD } = await import('@/lib/config');
         const qualifyingStocks: StockData[] = [];
         const watchlistStocks: StockData[] = [];
 
-        const stockIds = priceQualifyingStocks.map(s => s.id);
+        const stockIds = enrichedStocks.map(s => s.id);
         const stocksWithOI = await prisma.stock.findMany({
             where: { id: { in: stockIds } },
             select: { id: true, previousDayOI: true, lastOIUpdate: true },
@@ -226,7 +229,7 @@ export class StockEngine {
             stocksWithOI.map((s: StockOIData) => [s.id, s])
         );
 
-        for (const stock of priceQualifyingStocks) {
+        for (const stock of enrichedStocks) {
             const stockOI = oiMap.get(stock.id);
             const currentOI = stock.openInterest || 0;
             const previousOI = stockOI?.previousDayOI
@@ -238,22 +241,89 @@ export class StockEngine {
                 oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
             }
 
-            const enrichedStock = {
+            const stockWithOI = {
                 ...stock,
                 previousOpenInterest: previousOI,
                 oiChangePercent: Math.round(oiChangePercent * 100) / 100,
             };
 
+            // Apply filters
             const passesOIFilter = previousOI === 0 || Math.abs(oiChangePercent) >= OI_CHANGE_THRESHOLD;
 
-            if (passesOIFilter) {
-                qualifyingStocks.push(enrichedStock);
+            // Apply breakout filter: stock must be above prev day high OR below prev day low
+            const passesBreakoutFilter = this.isBreakout(stockWithOI) || this.isBreakdown(stockWithOI);
+
+            // Stock qualifies if it passes BOTH OI and breakout filters
+            if (passesOIFilter && passesBreakoutFilter) {
+                qualifyingStocks.push(stockWithOI);
             } else {
-                watchlistStocks.push(enrichedStock);
+                watchlistStocks.push(stockWithOI);
             }
         }
 
         return { qualifyingStocks, watchlistStocks };
+    }
+
+    /**
+     * Enrich stocks with previous day OHLC data
+     * Fetches in parallel with rate limiting considerations
+     */
+    private async enrichWithPreviousDayOHLC(stocks: StockData[]): Promise<StockData[]> {
+        // Fetch previous day OHLC for all stocks in parallel
+        const ohlcPromises = stocks.map(async (stock) => {
+            if (!stock.dhanSecurityId) return stock;
+
+            try {
+                const prevDayData = await this.dhanClient.getPreviousDayOHLC(
+                    stock.dhanSecurityId,
+                    'NSE_EQ'
+                );
+
+                if (!prevDayData) {
+                    // No previous day data available, return stock as-is
+                    return stock;
+                }
+
+                // Determine breakout type
+                const isBreakout = stock.ltp > prevDayData.high;
+                const isBreakdown = stock.ltp < prevDayData.low;
+                const breakoutType: 'BREAKOUT' | 'BREAKDOWN' | null = isBreakout ? 'BREAKOUT' : isBreakdown ? 'BREAKDOWN' : null;
+
+                return {
+                    ...stock,
+                    previousDayHigh: prevDayData.high,
+                    previousDayLow: prevDayData.low,
+                    previousDayOpen: prevDayData.open,
+                    breakoutType,
+                };
+            } catch (error) {
+                console.error(`Error fetching previous day OHLC for ${stock.symbol}:`, error);
+                return stock; // Return stock without enrichment on error
+            }
+        });
+
+        // Wait for all to complete (Promise.allSettled to handle failures gracefully)
+        const results = await Promise.allSettled(ohlcPromises);
+
+        return results.map(result =>
+            result.status === 'fulfilled' ? result.value : stocks.find(s => true)!
+        );
+    }
+
+    /**
+     * Check if stock is in breakout (price > previous day high)
+     */
+    private isBreakout(stock: StockData): boolean {
+        if (!stock.previousDayHigh) return false;
+        return stock.ltp > stock.previousDayHigh;
+    }
+
+    /**
+     * Check if stock is in breakdown (price < previous day low)
+     */
+    private isBreakdown(stock: StockData): boolean {
+        if (!stock.previousDayLow) return false;
+        return stock.ltp < stock.previousDayLow;
     }
 
     /**

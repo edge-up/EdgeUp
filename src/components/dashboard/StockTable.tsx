@@ -88,7 +88,7 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                             {title || (sectorName ? `Stocks in ${sectorName}` : 'Qualifying Stocks')}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                            {stocks.length} F&O {stocks.length === 1 ? 'stock' : 'stocks'} with ≥1% price and ≥7% OI change
+                            {stocks.length} F&O {stocks.length === 1 ? 'stock' : 'stocks'} with ≥1% price, ≥7% OI change, and breakout/breakdown
                         </p>
                     </div>
                     <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
@@ -144,6 +144,9 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                                     <SortIcon active={sortKey === 'oiChangePercent'} order={sortOrder} />
                                 </div>
                             </th>
+                            <th className="px-6 py-3.5 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Signal
+                            </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -185,6 +188,24 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                                         <span className={`font-data text-sm ${isOiUp ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             {isOiUp ? '+' : ''}{oiChange.toFixed(2)}%
                                         </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        {stock.breakoutType && (
+                                            <span
+                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium ${stock.breakoutType === 'BREAKOUT'
+                                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                                                    }`}
+                                                title={
+                                                    stock.breakoutType === 'BREAKOUT'
+                                                        ? `Price above prev day high (₹${stock.previousDayHigh?.toFixed(2)})`
+                                                        : `Price below prev day low (₹${stock.previousDayLow?.toFixed(2)})`
+                                                }
+                                            >
+                                                {stock.breakoutType === 'BREAKOUT' ? '⬆️' : '⬇️'}
+                                                {stock.breakoutType}
+                                            </span>
+                                        )}
                                     </td>
                                 </tr>
                             );

@@ -83,6 +83,11 @@ export interface StockData {
     openInterest?: number;
     previousOpenInterest?: number;
     oiChangePercent?: number;  // (current - prev) / prev * 100
+    // Previous day OHLC for breakout detection
+    previousDayHigh?: number;
+    previousDayLow?: number;
+    previousDayOpen?: number;
+    breakoutType?: 'BREAKOUT' | 'BREAKDOWN' | null;
 }
 
 export interface SnapshotData {

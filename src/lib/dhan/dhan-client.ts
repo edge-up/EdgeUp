@@ -203,6 +203,49 @@ export class DhanClient {
     }
 
     /**
+     * Get previous trading day's OHLC for a security
+     * Used for breakout/breakdown detection
+     * @param securityId Dhan security ID
+     * @returns Previous day's OHLC or null if not available
+     */
+    async getPreviousDayOHLC(
+        securityId: string,
+        exchangeSegment: string = 'NSE_EQ'
+    ): Promise<DhanHistoricalData | null> {
+        try {
+            // Fetch last 5 days of data to ensure we get previous trading day
+            // (accounts for weekends/holidays)
+            const toDate = new Date();
+            const fromDate = new Date();
+            fromDate.setDate(fromDate.getDate() - 7); // Go back 7 days
+
+            const historicalData = await this.getHistoricalData(
+                securityId,
+                fromDate,
+                toDate,
+                exchangeSegment
+            );
+
+            if (!historicalData || historicalData.length < 2) {
+                // Need at least 2 days of data (today + previous)
+                return null;
+            }
+
+            // Sort by timestamp descending (most recent first)
+            historicalData.sort((a, b) =>
+                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+
+            // Return second most recent (previous trading day)
+            // Index 0 = today, Index 1 = previous day
+            return historicalData[1] || null;
+        } catch (error) {
+            console.error(`DhanClient.getPreviousDayOHLC error for ${securityId}:`, error);
+            return null; // Return null on error, don't fail entire stock processing
+        }
+    }
+
+    /**
      * Search for instruments by symbol
      * @param query Search query
      * @returns Array of matching instruments
