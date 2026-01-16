@@ -269,9 +269,17 @@ export class StockEngine {
      * Fetches in parallel with rate limiting considerations
      */
     private async enrichWithPreviousDayOHLC(stocks: StockData[]): Promise<StockData[]> {
+        console.log(`📊 Enriching ${stocks.length} stocks with previous day OHLC...`);
+        let successCount = 0;
+        let failCount = 0;
+
         // Fetch previous day OHLC for all stocks in parallel
         const ohlcPromises = stocks.map(async (stock) => {
-            if (!stock.dhanSecurityId) return stock;
+            if (!stock.dhanSecurityId) {
+                console.warn(`⚠️ No Dhan Security ID for ${stock.symbol}`);
+                failCount++;
+                return stock;
+            }
 
             try {
                 const prevDayData = await this.dhanClient.getPreviousDayOHLC(
@@ -281,6 +289,8 @@ export class StockEngine {
 
                 if (!prevDayData) {
                     // No previous day data available, return stock as-is
+                    console.warn(`⚠️ No previous day data for ${stock.symbol}`);
+                    failCount++;
                     return stock;
                 }
 
@@ -288,6 +298,9 @@ export class StockEngine {
                 const isBreakout = stock.ltp > prevDayData.high;
                 const isBreakdown = stock.ltp < prevDayData.low;
                 const breakoutType: 'BREAKOUT' | 'BREAKDOWN' | null = isBreakout ? 'BREAKOUT' : isBreakdown ? 'BREAKDOWN' : null;
+
+                console.log(`✅ ${stock.symbol}: High=${prevDayData.high}, Low=${prevDayData.low}, LTP=${stock.ltp}, Type=${breakoutType || 'RANGE'}`);
+                successCount++;
 
                 return {
                     ...stock,
@@ -297,13 +310,16 @@ export class StockEngine {
                     breakoutType,
                 };
             } catch (error) {
-                console.error(`Error fetching previous day OHLC for ${stock.symbol}:`, error);
+                console.error(`❌ Error fetching previous day OHLC for ${stock.symbol}:`, error);
+                failCount++;
                 return stock; // Return stock without enrichment on error
             }
         });
 
         // Wait for all to complete (Promise.allSettled to handle failures gracefully)
         const results = await Promise.allSettled(ohlcPromises);
+
+        console.log(`📈 OHLC Enrichment Complete: ${successCount} success, ${failCount} failed out of ${stocks.length} stocks`);
 
         return results.map(result =>
             result.status === 'fulfilled' ? result.value : stocks.find(s => true)!
