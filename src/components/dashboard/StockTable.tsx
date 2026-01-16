@@ -88,7 +88,7 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                             {title || (sectorName ? `Stocks in ${sectorName}` : 'Qualifying Stocks')}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                            {stocks.length} F&O {stocks.length === 1 ? 'stock' : 'stocks'} with ≥1% price, ≥7% OI change, and breakout/breakdown
+                            {stocks.length} F&O {stocks.length === 1 ? 'stock' : 'stocks'} with ≥1% price, ≥3% OI change, and breakout/breakdown
                         </p>
                     </div>
                     <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">

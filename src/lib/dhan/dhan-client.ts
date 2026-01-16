@@ -213,11 +213,11 @@ export class DhanClient {
         exchangeSegment: string = 'NSE_EQ'
     ): Promise<DhanHistoricalData | null> {
         try {
-            // Fetch last 5 days of data to ensure we get previous trading day
-            // (accounts for weekends/holidays)
+            // Fetch last 14 days of data to ensure we get previous trading day
+            // (accounts for weekends/holidays, including long holiday periods like Diwali)
             const toDate = new Date();
             const fromDate = new Date();
-            fromDate.setDate(fromDate.getDate() - 7); // Go back 7 days
+            fromDate.setDate(fromDate.getDate() - 14); // Extended from 7 to 14 days
 
             const historicalData = await this.getHistoricalData(
                 securityId,
@@ -228,6 +228,7 @@ export class DhanClient {
 
             if (!historicalData || historicalData.length < 2) {
                 // Need at least 2 days of data (today + previous)
+                console.warn(`getPreviousDayOHLC: Insufficient data for ${securityId} (got ${historicalData?.length || 0} days, need 2)`);
                 return null;
             }
 
@@ -237,8 +238,15 @@ export class DhanClient {
             );
 
             // Return second most recent (previous trading day)
-            // Index 0 = today, Index 1 = previous day
-            return historicalData[1] || null;
+            // Index 0 = today/most recent, Index 1 = previous trading day
+            const previousDay = historicalData[1];
+
+            if (!previousDay) {
+                console.warn(`getPreviousDayOHLC: No previous day data found for ${securityId}`);
+                return null;
+            }
+
+            return previousDay;
         } catch (error) {
             console.error(`DhanClient.getPreviousDayOHLC error for ${securityId}:`, error);
             return null; // Return null on error, don't fail entire stock processing

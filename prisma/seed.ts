@@ -233,6 +233,65 @@ async function main() {
         { symbol: 'NTPC', name: 'NTPC Ltd', isin: 'INE733E01010', lotSize: 2300, industry: 'Energy' }
     ], 'NIFTY_ENERGY');
 
+    console.log('📅 Seeding Trading Calendar (2025-2026)...');
+
+    // NSE Holiday Calendar 2025-2026
+    const tradingHolidays = [
+        // 2025 Holidays
+        { date: '2025-01-26', name: 'Republic Day', session: 'CLOSED' },
+        { date: '2025-03-14', name: 'Holi', session: 'CLOSED' },
+        { date: '2025-03-31', name: 'Id-Ul-Fitr (Ramadan Eid)', session: 'CLOSED' },
+        { date: '2025-04-10', name: 'Mahavir Jayanti', session: 'CLOSED' },
+        { date: '2025-04-14', name: 'Dr. Baba Saheb Ambedkar Jayanti', session: 'CLOSED' },
+        { date: '2025-04-18', name: 'Good Friday', session: 'CLOSED' },
+        { date: '2025-05-01', name: 'Maharashtra Day', session: 'CLOSED' },
+        { date: '2025-06-07', name: 'Bakri Id', session: 'CLOSED' },
+        { date: '2025-08-15', name: 'Independence Day', session: 'CLOSED' },
+        { date: '2025-08-27', name: 'Ganesh Chaturthi', session: 'CLOSED' },
+        { date: '2025-10-02', name: 'Mahatma Gandhi Jayanti', session: 'CLOSED' },
+        { date: '2025-10-21', name: 'Dussehra', session: 'CLOSED' },
+        { date: '2025-11-01', name: 'Diwali Laxmi Pujan', session: 'CLOSED' },
+        { date: '2025-11-05', name: 'Gurunanak Jayanti', session: 'CLOSED' },
+        { date: '2025-12-25', name: 'Christmas', session: 'CLOSED' },
+
+        // 2026 Holidays (partial list - update as NSE announces)
+        { date: '2026-01-26', name: 'Republic Day', session: 'CLOSED' },
+        { date: '2026-03-03', name: 'Holi', session: 'CLOSED' },
+        { date: '2026-03-20', name: 'Id-Ul-Fitr (Ramadan Eid) (Tentative)', session: 'CLOSED' },
+        { date: '2026-04-02', name: 'Mahavir Jayanti', session: 'CLOSED' },
+        { date: '2026-04-03', name: 'Good Friday', session: 'CLOSED' },
+        { date: '2026-04-06', name: 'Ram Navami', session: 'CLOSED' },
+        { date: '2026-04-14', name: 'Dr. Baba Saheb Ambedkar Jayanti', session: 'CLOSED' },
+        { date: '2026-05-01', name: 'Maharashtra Day', session: 'CLOSED' },
+        { date: '2026-05-27', name: 'Bakri Id (Tentative)', session: 'CLOSED' },
+        { date: '2026-08-15', name: 'Independence Day', session: 'CLOSED' },
+        { date: '2026-08-16', name: 'Parsi New Year', session: 'CLOSED' },
+        { date: '2026-09-15', name: 'Ganesh Chaturthi', session: 'CLOSED' },
+        { date: '2026-10-02', name: 'Mahatma Gandhi Jayanti', session: 'CLOSED' },
+        { date: '2026-10-09', name: 'Dussehra', session: 'CLOSED' },
+        { date: '2026-10-20', name: 'Diwali Laxmi Pujan', session: 'CLOSED' },
+        { date: '2026-11-25', name: 'Gurunanak Jayanti', session: 'CLOSED' },
+        { date: '2026-12-25', name: 'Christmas', session: 'CLOSED' },
+    ];
+
+    for (const holiday of tradingHolidays) {
+        await prisma.tradingCalendar.upsert({
+            where: { date: new Date(holiday.date) },
+            create: {
+                date: new Date(holiday.date),
+                isHoliday: true,
+                holidayName: holiday.name,
+                sessionType: holiday.session as any,
+            },
+            update: {
+                isHoliday: true,
+                holidayName: holiday.name,
+                sessionType: holiday.session as any,
+            },
+        });
+    }
+
+    console.log(`✅ Seeded ${tradingHolidays.length} trading holidays`);
     console.log('✨ Seed complete!');
 }
 

@@ -250,11 +250,11 @@ export class StockEngine {
             // Apply filters
             const passesOIFilter = previousOI === 0 || Math.abs(oiChangePercent) >= OI_CHANGE_THRESHOLD;
 
-            // Apply breakout filter: stock must be above prev day high OR below prev day low
-            const passesBreakoutFilter = this.isBreakout(stockWithOI) || this.isBreakdown(stockWithOI);
+            // Note: Breakout/breakdown info is enriched for display but NOT used as a filter
+            // User can see breakout indicators in UI, but they don't affect qualification
 
-            // Stock qualifies if it passes BOTH OI and breakout filters
-            if (passesOIFilter && passesBreakoutFilter) {
+            // Stock qualifies if it passes OI filter
+            if (passesOIFilter) {
                 qualifyingStocks.push(stockWithOI);
             } else {
                 watchlistStocks.push(stockWithOI);

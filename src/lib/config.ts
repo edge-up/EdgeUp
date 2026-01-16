@@ -44,9 +44,9 @@ export const PRICE_CHANGE_THRESHOLD = parseFloat(
     process.env.NEXT_PUBLIC_PRICE_CHANGE_THRESHOLD || '1'
 );
 
-/** Minimum OI change % to qualify (default: 7%) */
+/** Minimum OI change % to qualify (default: 3%) */
 export const OI_CHANGE_THRESHOLD = parseFloat(
-    process.env.NEXT_PUBLIC_OI_CHANGE_THRESHOLD || '7'
+    process.env.NEXT_PUBLIC_OI_CHANGE_THRESHOLD || '3'
 );
 
 // ================================
