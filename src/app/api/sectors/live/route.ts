@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getSectorEngine } from '@/lib/engines/sector-engine';
 
+// Force dynamic rendering for this route
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/sectors/live
  * Always returns live/fresh sector data, bypassing any frozen snapshot
