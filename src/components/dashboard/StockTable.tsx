@@ -191,21 +191,39 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        {stock.breakoutType && (
-                                            <span
-                                                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium ${stock.breakoutType === 'BREAKOUT'
-                                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-                                                    }`}
-                                                title={
-                                                    stock.breakoutType === 'BREAKOUT'
-                                                        ? `Price above prev day high (₹${stock.previousDayHigh?.toFixed(2)})`
-                                                        : `Price below prev day low (₹${stock.previousDayLow?.toFixed(2)})`
-                                                }
-                                            >
-                                                {stock.breakoutType === 'BREAKOUT' ? '⬆️' : '⬇️'}
-                                                {stock.breakoutType}
-                                            </span>
+                                        {stock.previousDayHigh && stock.previousDayLow ? (
+                                            <div className="flex flex-col gap-1">
+                                                {stock.breakoutType === 'BREAKOUT' ? (
+                                                    <>
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                                            ⬆️ Breakout
+                                                        </span>
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                            Prev High: ₹{stock.previousDayHigh.toFixed(2)}
+                                                        </span>
+                                                    </>
+                                                ) : stock.breakoutType === 'BREAKDOWN' ? (
+                                                    <>
+                                                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                                                            ⬇️ Breakdown
+                                                        </span>
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                            Prev Low: ₹{stock.previousDayLow.toFixed(2)}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                            Range: ₹{stock.previousDayLow.toFixed(2)}
+                                                        </span>
+                                                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                                                            to ₹{stock.previousDayHigh.toFixed(2)}
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-slate-400">-</span>
                                         )}
                                     </td>
                                 </tr>
