@@ -249,40 +249,60 @@ export class DhanClient {
         exchangeSegment: string = 'NSE_EQ'
     ): Promise<DhanHistoricalData | null> {
         try {
-            // Fetch last 14 days of data to ensure we get previous trading day
-            // (accounts for weekends/holidays, including long holiday periods like Diwali)
-            const toDate = new Date();
-            const fromDate = new Date();
-            fromDate.setDate(fromDate.getDate() - 14); // Extended from 7 to 14 days
+            // Dhan intraday API returns minute-level data for a SINGLE day
+            // So we need to request yesterday's specific date
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
 
-            const historicalData = await this.getHistoricalData(
-                securityId,
-                fromDate,
-                toDate,
-                exchangeSegment
-            );
+            // Try up to 5 days back to find a trading day
+            for (let daysBack = 1; daysBack <= 5; daysBack++) {
+                const targetDate = new Date(today);
+                targetDate.setDate(today.getDate() - daysBack);
 
-            if (!historicalData || historicalData.length < 2) {
-                // Need at least 2 days of data (today + previous)
-                console.warn(`getPreviousDayOHLC: Insufficient data for ${securityId} (got ${historicalData?.length || 0} days, need 2)`);
-                return null;
+                // Skip weekends
+                const dayOfWeek = targetDate.getDay();
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    continue;
+                }
+
+                try {
+                    console.log(`📅 Trying to fetch data for ${targetDate.toISOString().split('T')[0]}...`);
+
+                    const intradayData = await this.getHistoricalData(
+                        securityId,
+                        targetDate,  // Same date for from and to
+                        targetDate,
+                        exchangeSegment
+                    );
+
+                    if (intradayData && intradayData.length > 0) {
+                        // Calculate OHLC from minute-level intraday data
+                        const open = intradayData[0].open;
+                        const close = intradayData[intradayData.length - 1].close;
+                        const high = Math.max(...intradayData.map(d => d.high));
+                        const low = Math.min(...intradayData.map(d => d.low));
+                        const volume = intradayData.reduce((sum, d) => sum + d.volume, 0);
+
+                        console.log(`✅ Previous day OHLC calculated from ${intradayData.length} intraday candles: H=${high}, L=${low}`);
+
+                        return {
+                            open,
+                            high,
+                            low,
+                            close,
+                            volume,
+                            timestamp: targetDate.toISOString().split('T')[0],
+                        };
+                    }
+                } catch (error) {
+                    console.warn(`Failed to get data for ${targetDate.toISOString().split('T')[0]}:`, error);
+                    // Continue trying previous days
+                }
             }
 
-            // Sort by timestamp descending (most recent first)
-            historicalData.sort((a, b) =>
-                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-            );
-
-            // Return second most recent (previous trading day)
-            // Index 0 = today/most recent, Index 1 = previous trading day
-            const previousDay = historicalData[1];
-
-            if (!previousDay) {
-                console.warn(`getPreviousDayOHLC: No previous day data found for ${securityId}`);
-                return null;
-            }
-
-            return previousDay;
+            console.warn(`getPreviousDayOHLC: No previous day data found for ${securityId} after checking 5 days`);
+            return null;
         } catch (error) {
             console.error(`DhanClient.getPreviousDayOHLC error for ${securityId}:`, error);
             return null; // Return null on error, don't fail entire stock processing
