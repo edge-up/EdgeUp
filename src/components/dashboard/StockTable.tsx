@@ -3,6 +3,7 @@
 import { StockData } from '@/types';
 import { useState } from 'react';
 import { OI_CHANGE_THRESHOLD } from '@/lib/config';
+import Link from 'next/link';
 
 interface StockTableProps {
     stocks: StockData[];
@@ -165,9 +166,12 @@ export function StockTable({ stocks, sectorName, title }: StockTableProps) {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-1 h-8 rounded-full ${isUp ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                                            <span className="font-semibold text-slate-800 dark:text-white">
+                                            <Link
+                                                href={`/dashboard/stocks/${stock.symbol}`}
+                                                className="font-semibold text-slate-800 dark:text-white hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                                            >
                                                 {stock.symbol}
-                                            </span>
+                                            </Link>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { NotificationBell } from './NotificationBell';
 
 export function Header() {
     const { data: session } = useSession();
@@ -15,6 +16,7 @@ export function Header() {
     const navLinks = session ? [
         { href: '/dashboard', label: 'Dashboard' },
         { href: '/dashboard/live', label: 'Live Monitor' },
+        { href: '/dashboard/history', label: 'History' },
     ] : [];
 
     return (
@@ -38,8 +40,8 @@ export function Header() {
                                 key={link.href}
                                 href={link.href}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${isActive(link.href)
-                                        ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                                     }`}
                             >
                                 {link.label}
@@ -51,6 +53,7 @@ export function Header() {
                     <div className="hidden md:flex items-center gap-4">
                         {session ? (
                             <>
+                                <NotificationBell />
                                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
                                     <div className="w-6 h-6 rounded-full bg-gradient-primary flex items-center justify-center text-white text-xs font-semibold">
                                         {session.user.email?.charAt(0).toUpperCase()}
@@ -107,8 +110,8 @@ export function Header() {
                                 href={link.href}
                                 onClick={() => setMobileMenuOpen(false)}
                                 className={`block px-4 py-3 rounded-xl text-sm font-medium transition-colors ${isActive(link.href)
-                                        ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
-                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    ? 'bg-primary-500/10 text-primary-600 dark:text-primary-400'
+                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
                                     }`}
                             >
                                 {link.label}

@@ -28,6 +28,8 @@ model User {
 
   sessions       Session[]
   accounts       Account[]
+  alerts         Alert[]
+  notifications  Notification[]
 }
 
 model Account {
@@ -286,3 +288,66 @@ enum FeedStatus {
   DOWN
   UNKNOWN
 }
+
+// ================================
+// ALERTS & NOTIFICATIONS
+// ================================
+
+model Alert {
+  id          String    @id @default(cuid())
+  userId      String
+  type        AlertType
+  targetType  TargetType // SECTOR or STOCK
+  targetId    String     // sectorId or stockId
+  targetName  String     // Display name (e.g., "NIFTY BANK", "RELIANCE")
+  threshold   Float?     // Optional threshold (e.g., 1% for price, 3% for OI)
+  isActive    Boolean   @default(true)
+  triggeredAt DateTime? // Last time this alert was triggered
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([userId])
+  @@index([isActive])
+  @@index([targetType, targetId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  alertId   String?  // Optional link to the alert that triggered this
+  title     String
+  message   String
+  type      NotificationType
+  data      Json?    // Additional context (e.g., { sectorId, percentChange })
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alert     Alert?   @relation(fields: [alertId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+enum AlertType {
+  SECTOR_QUALIFYING  // Sector meets ±1% threshold
+  STOCK_BREAKOUT     // Stock breaks above previous day high
+  STOCK_BREAKDOWN    // Stock breaks below previous day low
+  OI_SPIKE           // OI change exceeds threshold
+}
+
+enum TargetType {
+  SECTOR
+  STOCK
+}
+
+enum NotificationType {
+  ALERT_TRIGGERED
+  SYSTEM_MESSAGE
+  MARKET_UPDATE
+}
+
