@@ -445,13 +445,47 @@ export class DhanClient {
     }
 
     private parseHistoricalResponse(data: Record<string, unknown>): DhanHistoricalData[] {
-        // Dhan intraday API can return data in two formats:
-        // 1. Direct response with OHLC fields (intraday endpoint)
-        // 2. Nested under data.data (historical endpoint - if it exists)
+        // Dhan intraday API returns data in PARALLEL ARRAY format:
+        // { open: [1610, 1611, ...], high: [...], low: [...], close: [...], timestamp: [...], volume: [...] }
+        // We need to transform this into array of candle objects
 
+        // Check if data has the parallel array format (all OHLC fields as arrays)
+        if (
+            Array.isArray(data.open) &&
+            Array.isArray(data.high) &&
+            Array.isArray(data.low) &&
+            Array.isArray(data.close)
+        ) {
+            const openArray = data.open as number[];
+            const highArray = data.high as number[];
+            const lowArray = data.low as number[];
+            const closeArray = data.close as number[];
+            const volumeArray = (data.volume as number[]) || [];
+            const timestampArray = (data.timestamp as string[]) || [];
+
+            // Transform parallel arrays into array of candle objects
+            const candles: DhanHistoricalData[] = [];
+            const length = Math.min(openArray.length, highArray.length, lowArray.length, closeArray.length);
+
+            for (let i = 0; i < length; i++) {
+                candles.push({
+                    open: openArray[i] || 0,
+                    high: highArray[i] || 0,
+                    low: lowArray[i] || 0,
+                    close: closeArray[i] || 0,
+                    volume: volumeArray[i] || 0,
+                    timestamp: timestampArray[i] || new Date().toISOString(),
+                });
+            }
+
+            console.log(`📊 Parsed ${candles.length} intraday candles from parallel array format`);
+            return candles;
+        }
+
+        // Fallback: Handle other possible formats (array of objects, nested data)
         let candleData: any[] = [];
 
-        // Check if data is directly an array
+        // Check if data is directly an array of candle objects
         if (Array.isArray(data)) {
             candleData = data;
         }
@@ -460,11 +494,14 @@ export class DhanClient {
             candleData = data.data;
         }
         // Check if it's a single OHLC object (wrap in array)
-        else if (data.open !== undefined && data.high !== undefined) {
+        else if (data.open !== undefined && data.high !== undefined && !Array.isArray(data.open)) {
             candleData = [data];
         }
 
-        if (candleData.length === 0) return [];
+        if (candleData.length === 0) {
+            console.warn('parseHistoricalResponse: No data found in response');
+            return [];
+        }
 
         return candleData.map((candle: any) => ({
             open: candle.open || 0,
