@@ -109,16 +109,29 @@ async function main() {
     const scripMap = await fetchDhanScripMaster();
 
     console.log('📊 Seeding sectors...');
-    // ... (abbreviated sector seeding for brevity, but needed for file correctness)
+    // Seed all 18 major NIFTY sectoral indices
     const sectors = await prisma.$transaction([
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_BANK' }, create: { name: 'NIFTY BANK', symbol: 'NIFTY_BANK', description: 'Banking', isActive: true, dhanSecurityId: 'IDX_NIFTY_BANK' }, update: { dhanSecurityId: 'IDX_NIFTY_BANK' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_IT' }, create: { name: 'NIFTY IT', symbol: 'NIFTY_IT', description: 'IT', isActive: true, dhanSecurityId: 'IDX_NIFTY_IT' }, update: { dhanSecurityId: 'IDX_NIFTY_IT' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_PHARMA' }, create: { name: 'NIFTY PHARMA', symbol: 'NIFTY_PHARMA', description: 'Pharma', isActive: true, dhanSecurityId: 'IDX_NIFTY_PHARMA' }, update: { dhanSecurityId: 'IDX_NIFTY_PHARMA' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_AUTO' }, create: { name: 'NIFTY AUTO', symbol: 'NIFTY_AUTO', description: 'Auto', isActive: true, dhanSecurityId: 'IDX_NIFTY_AUTO' }, update: { dhanSecurityId: 'IDX_NIFTY_AUTO' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_METAL' }, create: { name: 'NIFTY METAL', symbol: 'NIFTY_METAL', description: 'Metal', isActive: true, dhanSecurityId: 'IDX_NIFTY_METAL' }, update: { dhanSecurityId: 'IDX_NIFTY_METAL' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_FMCG' }, create: { name: 'NIFTY FMCG', symbol: 'NIFTY_FMCG', description: 'FMCG', isActive: true, dhanSecurityId: 'IDX_NIFTY_FMCG' }, update: { dhanSecurityId: 'IDX_NIFTY_FMCG' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_FIN_SERVICE' }, create: { name: 'NIFTY FINANCIAL SERVICES', symbol: 'NIFTY_FIN_SERVICE', description: 'Fin Service', isActive: true, dhanSecurityId: 'IDX_NIFTY_FIN_SERVICE' }, update: { dhanSecurityId: 'IDX_NIFTY_FIN_SERVICE' } }),
-        prisma.sector.upsert({ where: { symbol: 'NIFTY_ENERGY' }, create: { name: 'NIFTY ENERGY', symbol: 'NIFTY_ENERGY', description: 'Energy', isActive: true, dhanSecurityId: 'IDX_NIFTY_ENERGY' }, update: { dhanSecurityId: 'IDX_NIFTY_ENERGY' } }),
+        // Existing sectors (8)
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_BANK' }, create: { name: 'NIFTY BANK', symbol: 'NIFTY_BANK', description: 'Banking', isActive: true, dhanSecurityId: 'IDX_I_13' }, update: { dhanSecurityId: 'IDX_I_13' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_IT' }, create: { name: 'NIFTY IT', symbol: 'NIFTY_IT', description: 'IT', isActive: true, dhanSecurityId: 'IDX_I_29' }, update: { dhanSecurityId: 'IDX_I_29' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_PHARMA' }, create: { name: 'NIFTY PHARMA', symbol: 'NIFTY_PHARMA', description: 'Pharma', isActive: true, dhanSecurityId: 'IDX_I_34' }, update: { dhanSecurityId: 'IDX_I_34' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_AUTO' }, create: { name: 'NIFTY AUTO', symbol: 'NIFTY_AUTO', description: 'Auto', isActive: true, dhanSecurityId: 'IDX_I_12' }, update: { dhanSecurityId: 'IDX_I_12' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_METAL' }, create: { name: 'NIFTY METAL', symbol: 'NIFTY_METAL', description: 'Metal', isActive: true, dhanSecurityId: 'IDX_I_31' }, update: { dhanSecurityId: 'IDX_I_31' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_FMCG' }, create: { name: 'NIFTY FMCG', symbol: 'NIFTY_FMCG', description: 'FMCG', isActive: true, dhanSecurityId: 'IDX_I_27' }, update: { dhanSecurityId: 'IDX_I_27' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_FIN_SERVICE' }, create: { name: 'NIFTY FINANCIAL SERVICES', symbol: 'NIFTY_FIN_SERVICE', description: 'Fin Service', isActive: true, dhanSecurityId: 'IDX_I_26' }, update: { dhanSecurityId: 'IDX_I_26' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_ENERGY' }, create: { name: 'NIFTY ENERGY', symbol: 'NIFTY_ENERGY', description: 'Energy', isActive: true, dhanSecurityId: 'IDX_I_25' }, update: { dhanSecurityId: 'IDX_I_25' } }),
+
+        // New sectors (10)
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_REALTY' }, create: { name: 'NIFTY REALTY', symbol: 'NIFTY_REALTY', description: 'Realty', isActive: true, dhanSecurityId: 'IDX_I_35' }, update: { dhanSecurityId: 'IDX_I_35' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_MEDIA' }, create: { name: 'NIFTY MEDIA', symbol: 'NIFTY_MEDIA', description: 'Media', isActive: true, dhanSecurityId: 'IDX_I_30' }, update: { dhanSecurityId: 'IDX_I_30' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_PSU_BANK' }, create: { name: 'NIFTY PSU BANK', symbol: 'NIFTY_PSU_BANK', description: 'PSU Bank', isActive: true, dhanSecurityId: 'IDX_I_37' }, update: { dhanSecurityId: 'IDX_I_37' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_PRIVATE_BANK' }, create: { name: 'NIFTY PRIVATE BANK', symbol: 'NIFTY_PRIVATE_BANK', description: 'Private Bank', isActive: true, dhanSecurityId: 'IDX_I_36' }, update: { dhanSecurityId: 'IDX_I_36' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_HEALTHCARE' }, create: { name: 'NIFTY HEALTHCARE', symbol: 'NIFTY_HEALTHCARE', description: 'Healthcare', isActive: true, dhanSecurityId: 'IDX_I_28' }, update: { dhanSecurityId: 'IDX_I_28' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_OIL_GAS' }, create: { name: 'NIFTY OIL & GAS', symbol: 'NIFTY_OIL_GAS', description: 'Oil & Gas', isActive: true, dhanSecurityId: 'IDX_I_32' }, update: { dhanSecurityId: 'IDX_I_32' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_CONSUMER_DURABLES' }, create: { name: 'NIFTY CONSUMER DURABLES', symbol: 'NIFTY_CONSUMER_DURABLES', description: 'Consumer Durables', isActive: true, dhanSecurityId: 'IDX_I_24' }, update: { dhanSecurityId: 'IDX_I_24' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_COMMODITIES' }, create: { name: 'NIFTY COMMODITIES', symbol: 'NIFTY_COMMODITIES', description: 'Commodities', isActive: true, dhanSecurityId: 'IDX_I_55' }, update: { dhanSecurityId: 'IDX_I_55' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_INFRASTRUCTURE' }, create: { name: 'NIFTY INFRASTRUCTURE', symbol: 'NIFTY_INFRASTRUCTURE', description: 'Infrastructure', isActive: true, dhanSecurityId: 'IDX_I_56' }, update: { dhanSecurityId: 'IDX_I_56' } }),
+        prisma.sector.upsert({ where: { symbol: 'NIFTY_MNC' }, create: { name: 'NIFTY MNC', symbol: 'NIFTY_MNC', description: 'MNC', isActive: true, dhanSecurityId: 'IDX_I_62' }, update: { dhanSecurityId: 'IDX_I_62' } }),
     ]);
 
     const seedStocks = async (stockList: any[], sectorSymbol: string) => {
@@ -232,6 +245,105 @@ async function main() {
         { symbol: 'POWERGRID', name: 'Power Grid Corporation of India Ltd', isin: 'INE752E01010', lotSize: 2400, industry: 'Energy' },
         { symbol: 'NTPC', name: 'NTPC Ltd', isin: 'INE733E01010', lotSize: 2300, industry: 'Energy' }
     ], 'NIFTY_ENERGY');
+
+    // NEW SECTORS - Comprehensive F&O Stock Lists
+
+    await seedStocks([
+        { symbol: 'DLF', name: 'DLF Ltd', isin: 'INE271C01023', lotSize: 1800, industry: 'Realty' },
+        { symbol: 'OBEROIRLTY', name: 'Oberoi Realty Ltd', isin: 'INE093I01010', lotSize: 250, industry: 'Realty' },
+        { symbol: 'GODREJPROP', name: 'Godrej Properties Ltd', isin: 'INE484J01027', lotSize: 400, industry: 'Realty' },
+        { symbol: 'PRESTIGE', name: 'Prestige Estates Projects Ltd', isin: 'INE811K01011', lotSize: 600, industry: 'Realty' },
+        { symbol: 'BRIGADE', name: 'Brigade Enterprises Ltd', isin: 'INE791I01019', lotSize: 1350, industry: 'Realty' },
+        { symbol: 'PHOENIXLTD', name: 'The Phoenix Mills Ltd', isin: 'INE211B01039', lotSize: 400, industry: 'Realty' },
+        { symbol: 'LODHA', name: 'Macrotech Developers Ltd', isin: 'INE670K01029', lotSize: 500, industry: 'Realty' }
+    ], 'NIFTY_REALTY');
+
+    await seedStocks([
+        { symbol: 'ZEEL', name: 'Zee Entertainment Enterprises Ltd', isin: 'INE256A01028', lotSize: 3700, industry: 'Media' },
+        { symbol: 'PVRINOX', name: 'PVR INOX Ltd', isin: 'INE191H01014', lotSize: 350, industry: 'Media' },
+        { symbol: 'SUNTV', name: 'Sun TV Network Ltd', isin: 'INE424H01027', lotSize: 1150, industry: 'Media' },
+        { symbol: 'NAZARA', name: 'Nazara Technologies Ltd', isin: 'INE418M01016', lotSize: 1200, industry: 'Media' }
+    ], 'NIFTY_MEDIA');
+
+    await seedStocks([
+        { symbol: 'SBIN', name: 'State Bank of India', isin: 'INE062A01020', lotSize: 1500, industry: 'PSU Bank' },
+        { symbol: 'CANBK', name: 'Canara Bank', isin: 'INE476A01022', lotSize: 8500, industry: 'PSU Bank' },
+        { symbol: 'BANKBARODA', name: 'Bank of Baroda', isin: 'INE028A01039', lotSize: 5200, industry: 'PSU Bank' },
+        { symbol: 'PNB', name: 'Punjab National Bank', isin: 'INE160A01022', lotSize: 15000, industry: 'PSU Bank' },
+        { symbol: 'UNIONBANK', name: 'Union Bank of India', isin: 'INE692A01016', lotSize: 6600, industry: 'PSU Bank' },
+        { symbol: 'INDIANB', name: 'Indian Bank', isin: 'INE562A01011', lotSize: 1800, industry: 'PSU Bank' },
+        { symbol: 'MAHABANK', name: 'Bank of Maharashtra', isin: 'INE457A01014', lotSize: 23000, industry: 'PSU Bank' }
+    ], 'NIFTY_PSU_BANK');
+
+    await seedStocks([
+        { symbol: 'HDFCBANK', name: 'HDFC Bank Ltd', isin: 'INE040A01034', lotSize: 550, industry: 'Private Bank' },
+        { symbol: 'ICICIBANK', name: 'ICICI Bank Ltd', isin: 'INE090A01021', lotSize: 1100, industry: 'Private Bank' },
+        { symbol: 'KOTAKBANK', name: 'Kotak Mahindra Bank Ltd', isin: 'INE237A01028', lotSize: 400, industry: 'Private Bank' },
+        { symbol: 'AXISBANK', name: 'Axis Bank Ltd', isin: 'INE238A01034', lotSize: 1200, industry: 'Private Bank' },
+        { symbol: 'INDUSINDBK', name: 'IndusInd Bank Ltd', isin: 'INE095A01012', lotSize: 900, industry: 'Private Bank' },
+        { symbol: 'FEDERALBNK', name: 'Federal Bank Ltd', isin: 'INE171A01029', lotSize: 4000, industry: 'Private Bank' },
+        { symbol: 'BANDHANBNK', name: 'Bandhan Bank Ltd', isin: 'INE545U01014', lotSize: 3900, industry: 'Private Bank' },
+        { symbol: 'IDFCFIRSTB', name: 'IDFC First Bank Ltd', isin: 'INE092T01019', lotSize: 10000, industry: 'Private Bank' }
+    ], 'NIFTY_PRIVATE_BANK');
+
+    await seedStocks([
+        { symbol: 'APOLLOHOSP', name: 'Apollo Hospitals Enterprise Ltd', isin: 'INE437A01024', lotSize: 125, industry: 'Healthcare' },
+        { symbol: 'MAX', name: 'Max Healthcare Institute Ltd', isin: 'INE027H01010', lotSize: 1200, industry: 'Healthcare' },
+        { symbol: 'FORTIS', name: 'Fortis Healthcare Ltd', isin: 'INE061F01013', lotSize: 1800, industry: 'Healthcare' },
+        { symbol: 'LALPATHLAB', name: 'Dr. Lal Path Labs Ltd', isin: 'INE600L01024', lotSize: 300, industry: 'Healthcare' },
+        { symbol: 'METROPOLIS', name: 'Metropolis Healthcare Ltd', isin: 'INE112L01020', lotSize: 350, industry: 'Healthcare' }
+    ], 'NIFTY_HEALTHCARE');
+
+    await seedStocks([
+        { symbol: 'RELIANCE', name: 'Reliance Industries Ltd', isin: 'INE002A01018', lotSize: 250, industry: 'Oil & Gas' },
+        { symbol: 'ONGC', name: 'Oil & Natural Gas Corporation Ltd', isin: 'INE213A01029', lotSize: 2800, industry: 'Oil & Gas' },
+        { symbol: 'IOC', name: 'Indian Oil Corporation Ltd', isin: 'INE242A01010', lotSize: 5600, industry: 'Oil & Gas' },
+        { symbol: 'BPCL', name: 'Bharat Petroleum Corporation Ltd', isin: 'INE029A01011', lotSize: 1800, industry: 'Oil & Gas' },
+        { symbol: 'GAIL', name: 'GAIL (India) Ltd', isin: 'INE129A01019', lotSize: 4100, industry: 'Oil & Gas' },
+        { symbol: 'HINDPETRO', name: 'Hindustan Petroleum Corporation Ltd', isin: 'INE094A01015', lotSize: 2100, industry: 'Oil & Gas' },
+        { symbol: 'MGL', name: 'Mahanagar Gas Ltd', isin: 'INE002S01010', lotSize: 550, industry: 'Oil & Gas' }
+    ], 'NIFTY_OIL_GAS');
+
+    await seedStocks([
+        { symbol: 'VOLTAS', name: 'Voltas Ltd', isin: 'INE226A01021', lotSize: 700, industry: 'Consumer Durables' },
+        { symbol: 'HAVELLS', name: 'Havells India Ltd', isin: 'INE176B01034', lotSize: 500, industry: 'Consumer Durables' },
+        { symbol: 'WHIRLPOOL', name: 'Whirlpool of India Ltd', isin: 'INE716A01013', lotSize: 450, industry: 'Consumer Durables' },
+        { symbol: 'CROMPTON', name: 'Crompton Greaves Consumer Electricals Ltd', isin: 'INE299U01018', lotSize: 1900, industry: 'Consumer Durables' },
+        { symbol: 'DIXON', name: 'Dixon Technologies (India) Ltd', isin: 'INE935S01011', lotSize: 100, industry: 'Consumer Durables' },
+        { symbol: 'AMBER', name: 'Amber Enterprises India Ltd', isin: 'INE371P01015', lotSize: 200, industry: 'Consumer Durables' },
+        { symbol: 'BLUESTARCO', name: 'Blue Star Ltd', isin: 'INE472A01039', lotSize: 600, industry: 'Consumer Durables' }
+    ], 'NIFTY_CONSUMER_DURABLES');
+
+    await seedStocks([
+        { symbol: 'TATASTEEL', name: 'Tata Steel Ltd', isin: 'INE081A01020', lotSize: 6100, industry: 'Commodities' },
+        { symbol: 'HINDALCO', name: 'Hindalco Industries Ltd', isin: 'INE038A01020', lotSize: 1400, industry: 'Commodities' },
+        { symbol: 'VEDL', name: 'Vedanta Ltd', isin: 'INE205A01025', lotSize: 2400, industry: 'Commodities' },
+        { symbol: 'COALINDIA', name: 'Coal India Ltd', isin: 'INE522F01014', lotSize: 1850, industry: 'Commodities' },
+        { symbol: 'SAIL', name: 'Steel Authority of India Ltd', isin: 'INE114A01011', lotSize: 7700, industry: 'Commodities' },
+        { symbol: 'JSWSTEEL', name: 'JSW Steel Ltd', isin: 'INE019A01038', lotSize: 1000, industry: 'Commodities' },
+        { symbol: 'NMDC', name: 'NMDC Ltd', isin: 'INE584A01023', lotSize: 3600, industry: 'Commodities' }
+    ], 'NIFTY_COMMODITIES');
+
+    await seedStocks([
+        { symbol: 'LT', name: 'Larsen & Toubro Ltd', isin: 'INE018A01030', lotSize: 250, industry: 'Infrastructure' },
+        { symbol: 'ADANIPORTS', name: 'Adani Ports and Special Economic Zone Ltd', isin: 'INE742F01042', lotSize: 700, industry: 'Infrastructure' },
+        { symbol: 'GRASIM', name: 'Grasim Industries Ltd', isin: 'INE047A01021', lotSize: 400, industry: 'Infrastructure' },
+        { symbol: 'ULTRACEMCO', name: 'UltraTech Cement Ltd', isin: 'INE481G01011', lotSize: 75, industry: 'Infrastructure' },
+        { symbol: 'ACC', name: 'ACC Ltd', isin: 'INE012A01025', lotSize: 300, industry: 'Infrastructure' },
+        { symbol: 'AMBUJACEM', name: 'Ambuja Cements Ltd', isin: 'INE079A01024', lotSize: 1500, industry: 'Infrastructure' },
+        { symbol: 'PFC', name: 'Power Finance Corporation Ltd', isin: 'INE134E01011', lotSize: 1950, industry: 'Infrastructure' },
+        { symbol: 'POWERGRID', name: 'Power Grid Corporation of India Ltd', isin: 'INE752E01010', lotSize: 2400, industry: 'Infrastructure' }
+    ], 'NIFTY_INFRASTRUCTURE');
+
+    await seedStocks([
+        { symbol: 'NESTLEIND', name: 'Nestle India Ltd', isin: 'INE239A01016', lotSize: 200, industry: 'MNC' },
+        { symbol: 'HINDUNILVR', name: 'Hindustan Unilever Ltd', isin: 'INE030A01027', lotSize: 300, industry: 'MNC' },
+        { symbol: 'ABB', name: 'ABB India Ltd', isin: 'INE117A01022', lotSize: 175, industry: 'MNC' },
+        { symbol: 'SIEMENS', name: 'Siemens Ltd', isin: 'INE003A01024', lotSize: 200, industry: 'MNC' },
+        { symbol: 'BOSCHLTD', name: 'Bosch Ltd', isin: 'INE323A01026', lotSize: 25, industry: 'MNC' },
+        { symbol: 'HONAUT', name: 'Honeywell Automation India Ltd', isin: 'INE671A01010', lotSize: 25, industry: 'MNC' },
+        { symbol: '3MINDIA', name: '3M India Ltd', isin: 'INE470A01017', lotSize: 25, industry: 'MNC' }
+    ], 'NIFTY_MNC');
 
     console.log('📅 Seeding Trading Calendar (2025-2026)...');
 
