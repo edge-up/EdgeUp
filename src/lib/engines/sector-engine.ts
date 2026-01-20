@@ -22,9 +22,15 @@ export class SectorEngine {
             if (cached) return cached;
         }
 
-        // Fetch sectors from database
+        // Fetch sectors from database - only select needed fields
         const sectors = await prisma.sector.findMany({
             where: { isActive: true },
+            select: {
+                id: true,
+                name: true,
+                symbol: true,
+                dhanSecurityId: true,
+            },
             orderBy: { name: 'asc' },
         });
 

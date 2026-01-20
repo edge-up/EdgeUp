@@ -25,20 +25,35 @@ export class StockEngine {
             if (cached) return cached;
         }
 
-        // Get sector info
+        // Get sector info - only select needed fields
         const sector = await prisma.sector.findUnique({
             where: { id: sectorId },
+            select: {
+                id: true,
+                name: true,
+                symbol: true,
+            },
         });
 
         if (!sector) {
             throw new Error(`Sector not found: ${sectorId}`);
         }
 
-        // Get stocks in this sector
+        // Get stocks in this sector - only select needed fields
         const constituents = await prisma.sectorConstituent.findMany({
             where: { sectorId },
-            include: {
-                stock: true,
+            select: {
+                stock: {
+                    select: {
+                        id: true,
+                        symbol: true,
+                        name: true,
+                        dhanSecurityId: true,
+                        dhanFNOSecurityId: true,
+                        isFOEligible: true,
+                        previousDayOI: true,
+                    },
+                },
             },
         });
 
