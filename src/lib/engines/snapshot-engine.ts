@@ -2,6 +2,7 @@ import prisma from '@/lib/db/prisma';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache/redis';
 import { getSectorEngine } from './sector-engine';
 import { getStockEngine } from './stock-engine';
+import { checkAndTriggerAlerts } from '@/lib/services/alert-service';
 import { SnapshotData, SectorData, StockData } from '@/types';
 import {
     getTradingDate,
@@ -207,6 +208,15 @@ export class SnapshotEngine {
             await cache.set(CACHE_KEYS.LATEST_SNAPSHOT, snapshotData, CACHE_TTL.SNAPSHOT);
 
             console.log(`Snapshot created: ${qualifyingSectors.length} qualifying sectors, ${totalStocks} stocks`);
+
+            // Trigger alerts for this snapshot
+            try {
+                await checkAndTriggerAlerts(snapshotData as any);
+                console.log('Alert checking completed');
+            } catch (alertError) {
+                console.error('Error checking alerts:', alertError);
+                // Don't fail the snapshot if alert checking fails
+            }
 
             return snapshotData;
         } catch (error) {

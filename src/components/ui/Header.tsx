@@ -18,6 +18,7 @@ export function Header() {
         { href: '/dashboard', label: 'Dashboard' },
         { href: '/dashboard/live', label: 'Live Monitor' },
         { href: '/dashboard/history', label: 'History' },
+        { href: '/dashboard/alerts', label: 'Alerts' },
     ] : [];
 
     return (
