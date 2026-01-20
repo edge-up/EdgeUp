@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 
 interface Notification {
     id: string;
@@ -38,9 +39,12 @@ export function NotificationBell() {
             if (data.success) {
                 setNotifications(data.data.notifications);
                 setUnreadCount(data.data.unreadCount);
+            } else {
+                toast.error('Failed to load notifications');
             }
         } catch (e) {
             console.error('Failed to fetch notifications:', e);
+            toast.error('Failed to load notifications');
         } finally {
             setLoading(false);
         }
@@ -56,15 +60,22 @@ export function NotificationBell() {
     // Mark all as read
     const markAllAsRead = async () => {
         try {
-            await fetch('/api/notifications', {
+            const res = await fetch('/api/notifications', {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ markAll: true })
             });
-            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            setUnreadCount(0);
+
+            if (res.ok) {
+                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                setUnreadCount(0);
+                toast.success('All notifications marked as read');
+            } else {
+                toast.error('Failed to mark notifications as read');
+            }
         } catch (e) {
             console.error('Failed to mark as read:', e);
+            toast.error('Failed to mark notifications as read');
         }
     };
 
