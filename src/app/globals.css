@@ -313,3 +313,87 @@ a {
     @apply text-lg font-semibold;
   }
 }
+
+/* ================================
+   MOBILE OPTIMIZATIONS
+   ================================ */
+
+/* Horizontal scroll for tables on mobile */
+@layer utilities {
+  .table-scroll-mobile {
+    @apply overflow-x-auto -mx-4 sm:mx-0;
+  }
+
+  .table-scroll-mobile table {
+    @apply min-w-[640px];
+  }
+
+  /* Touch-friendly buttons (minimum 44x44px) */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Mobile-friendly padding */
+  .mobile-px {
+    @apply px-4 sm:px-6;
+  }
+
+  .mobile-py {
+    @apply py-3 sm:py-4;
+  }
+
+  /* Hide on mobile */
+  .hide-mobile {
+    @apply hidden sm:block;
+  }
+
+  /* Show only on mobile */
+  .show-mobile {
+    @apply block sm:hidden;
+  }
+
+  /* Mobile card spacing */
+  .mobile-card-gap {
+    @apply space-y-3 sm:space-y-4;
+  }
+
+  /* Responsive text sizes */
+  .text-mobile-sm {
+    @apply text-xs sm:text-sm;
+  }
+
+  .text-mobile-base {
+    @apply text-sm sm:text-base;
+  }
+
+  .text-mobile-lg {
+    @apply text-base sm:text-lg;
+  }
+}
+
+/* Mobile-specific animations */
+@media (max-width: 640px) {
+  /* Reduce motion on mobile for performance */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Optimize table scrolling on mobile */
+  .table-scroll-mobile {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Increase tap target sizes */
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    min-height: 44px;
+  }
+}
