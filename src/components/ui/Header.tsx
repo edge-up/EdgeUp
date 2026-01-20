@@ -120,6 +120,14 @@ export function Header() {
                             </Link>
                         ))}
 
+                        {/* Mobile Theme Toggle & Notifications */}
+                        {session && (
+                            <div className="flex items-center gap-2 px-2 py-2">
+                                <ThemeToggle />
+                                <NotificationBell />
+                            </div>
+                        )}
+
                         <div className="divider my-4" />
 
                         {session ? (
