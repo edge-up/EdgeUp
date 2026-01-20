@@ -16,6 +16,78 @@ async function waitForQuoteRateLimit(): Promise<void> {
     lastQuoteApiCallTime = Date.now();
 }
 
+// Retry configuration
+const MAX_RETRIES = 3;
+const INITIAL_RETRY_DELAY_MS = 1000;
+
+// Request deduplication: prevent duplicate inflight requests
+const inflightRequests = new Map<string, Promise<Response>>();
+
+/**
+ * Fetch with retry and exponential backoff
+ */
+async function fetchWithRetry(
+    url: string,
+    options: RequestInit,
+    retries: number = MAX_RETRIES
+): Promise<Response> {
+    let lastError: Error | null = null;
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+
+            // Retry on 5xx server errors
+            if (response.status >= 500 && attempt < retries - 1) {
+                const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+                console.warn(`Dhan API 5xx error, retrying in ${delay}ms (attempt ${attempt + 1}/${retries})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                continue;
+            }
+
+            return response;
+        } catch (error) {
+            lastError = error as Error;
+
+            // Retry on network errors
+            if (attempt < retries - 1) {
+                const delay = INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt);
+                console.warn(`Dhan API network error, retrying in ${delay}ms (attempt ${attempt + 1}/${retries}):`, error);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            }
+        }
+    }
+
+    throw lastError || new Error('Max retries exceeded');
+}
+
+/**
+ * Deduplicated fetch - prevents duplicate inflight requests for the same payload
+ */
+async function deduplicatedFetch(
+    url: string,
+    options: RequestInit,
+    cacheKey: string
+): Promise<Response> {
+    // Check if there's already a request in flight for this key
+    const existing = inflightRequests.get(cacheKey);
+    if (existing) {
+        return existing.then(r => r.clone());
+    }
+
+    // Create new request and track it
+    const requestPromise = fetchWithRetry(url, options);
+    inflightRequests.set(cacheKey, requestPromise);
+
+    try {
+        const response = await requestPromise;
+        return response;
+    } finally {
+        // Clean up after request completes
+        inflightRequests.delete(cacheKey);
+    }
+}
+
 interface DhanClientConfig {
     clientId: string;
     accessToken: string;
@@ -25,6 +97,7 @@ interface DhanClientConfig {
  * Dhan API Client for fetching market data
  * Documentation: https://dhanhq.co/docs/v2/
  * Rate Limits: Quote APIs = 1 request/second
+ * Features: Auto-retry, request deduplication, rate limiting
  */
 export class DhanClient {
     private clientId: string;
