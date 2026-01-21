@@ -1,7 +1,17 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { createChart, IChartApi, ISeriesApi, CandlestickData, Time } from 'lightweight-charts';
+import {
+    createChart,
+    IChartApi,
+    ISeriesApi,
+    CandlestickData,
+    Time,
+    CandlestickSeries,
+    LineSeries,
+    AreaSeries,
+    HistogramSeries
+} from 'lightweight-charts';
 
 interface AdvancedChartProps {
     symbol: string;
@@ -120,7 +130,7 @@ export function AdvancedStockChart({
 
         // Add main series based on chart type
         if (chartType === 'candlestick') {
-            const candlestickSeries = chart.addCandlestickSeries({
+            const candlestickSeries = chart.addSeries(CandlestickSeries, {
                 upColor: '#10b981',
                 downColor: '#ef4444',
                 borderUpColor: '#10b981',
@@ -131,7 +141,7 @@ export function AdvancedStockChart({
             candlestickSeries.setData(chartData);
             mainSeriesRef.current = candlestickSeries as any;
         } else if (chartType === 'line') {
-            const lineSeries = chart.addLineSeries({
+            const lineSeries = chart.addSeries(LineSeries, {
                 color: '#6366f1',
                 lineWidth: 2,
             });
@@ -142,7 +152,7 @@ export function AdvancedStockChart({
             lineSeries.setData(lineData);
             mainSeriesRef.current = lineSeries as any;
         } else if (chartType === 'area') {
-            const areaSeries = chart.addAreaSeries({
+            const areaSeries = chart.addSeries(AreaSeries, {
                 topColor: 'rgba(99, 102, 241, 0.4)',
                 bottomColor: 'rgba(99, 102, 241, 0.0)',
                 lineColor: '#6366f1',
@@ -158,7 +168,7 @@ export function AdvancedStockChart({
 
         // Add volume if enabled
         if (activeIndicators.has('VOLUME') && ohlcData.some(d => d.volume)) {
-            const volumeSeries = chart.addHistogramSeries({
+            const volumeSeries = chart.addSeries(HistogramSeries, {
                 color: '#94a3b8',
                 priceFormat: {
                     type: 'volume',
@@ -185,7 +195,7 @@ export function AdvancedStockChart({
 
         // Add moving averages if enabled
         if (activeIndicators.has('MA20')) {
-            const ma20Series = chart.addLineSeries({
+            const ma20Series = chart.addSeries(LineSeries, {
                 color: '#f59e0b',
                 lineWidth: 1,
                 priceLineVisible: false,
@@ -194,7 +204,7 @@ export function AdvancedStockChart({
         }
 
         if (activeIndicators.has('MA50')) {
-            const ma50Series = chart.addLineSeries({
+            const ma50Series = chart.addSeries(LineSeries, {
                 color: '#8b5cf6',
                 lineWidth: 1,
                 priceLineVisible: false,
