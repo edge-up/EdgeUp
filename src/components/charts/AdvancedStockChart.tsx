@@ -39,7 +39,7 @@ export function AdvancedStockChart({
 
     const [chartType, setChartType] = useState<ChartType>('candlestick');
     const [timeframe, setTimeframe] = useState<Timeframe>('1D');
-    const [activeIndicators, setActiveIndicators] = useState<Set<Indicator>>(new Set(['VOLUME']));
+    const [activeIndicators, setActiveIndicators] = useState<Set<Indicator>>(new Set(['VOLUME' as Indicator]));
     const [isLoading, setIsLoading] = useState(false);
 
     // Calculate technical indicators
@@ -271,8 +271,8 @@ export function AdvancedStockChart({
                             key={tf}
                             onClick={() => setTimeframe(tf)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${timeframe === tf
-                                    ? 'bg-primary-500 text-white'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {tf}
@@ -288,8 +288,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => setChartType('candlestick')}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chartType === 'candlestick'
-                                ? 'bg-slate-800 dark:bg-slate-700 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-slate-800 dark:bg-slate-700 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         title="Candlestick Chart"
                     >
@@ -298,8 +298,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => setChartType('line')}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chartType === 'line'
-                                ? 'bg-slate-800 dark:bg-slate-700 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-slate-800 dark:bg-slate-700 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         title="Line Chart"
                     >
@@ -308,8 +308,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => setChartType('area')}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${chartType === 'area'
-                                ? 'bg-slate-800 dark:bg-slate-700 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-slate-800 dark:bg-slate-700 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                         title="Area Chart"
                     >
@@ -325,8 +325,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => toggleIndicator('MA20')}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeIndicators.has('MA20')
-                                ? 'bg-amber-500 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-amber-500 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         MA20
@@ -334,8 +334,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => toggleIndicator('MA50')}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeIndicators.has('MA50')
-                                ? 'bg-purple-500 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         MA50
@@ -343,8 +343,8 @@ export function AdvancedStockChart({
                     <button
                         onClick={() => toggleIndicator('VOLUME')}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeIndicators.has('VOLUME')
-                                ? 'bg-slate-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            ? 'bg-slate-600 text-white'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
                         Volume
