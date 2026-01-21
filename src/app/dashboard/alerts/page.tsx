@@ -46,13 +46,16 @@ export default function AlertsPage() {
             const data = await res.json();
 
             if (data.success) {
-                setAlerts(data.data);
+                // Ensure data.data is an array
+                setAlerts(Array.isArray(data.data) ? data.data : []);
             } else {
                 toast.error('Failed to load alerts');
+                setAlerts([]);
             }
         } catch (error) {
             console.error('Error fetching alerts:', error);
             toast.error('Failed to load alerts');
+            setAlerts([]);
         } finally {
             setLoading(false);
         }
