@@ -66,7 +66,15 @@ export function AdvancedStockChart({
     };
 
     useEffect(() => {
-        if (!chartContainerRef.current || ohlcData.length === 0) return;
+        if (!chartContainerRef.current) return;
+
+        // Check if we have valid data
+        if (ohlcData.length === 0) {
+            setIsLoading(false);
+            return;
+        }
+
+        setIsLoading(true);
 
         // Create or update chart
         if (!chartRef.current) {
@@ -214,6 +222,9 @@ export function AdvancedStockChart({
 
         // Fit content
         chart.timeScale().fitContent();
+
+        // Mark as loaded
+        setIsLoading(false);
 
         // Handle resize
         const handleResize = () => {
@@ -364,9 +375,26 @@ export function AdvancedStockChart({
 
             {/* Chart Container */}
             <div className="glass-card rounded-2xl p-4 overflow-hidden">
-                {isLoading ? (
+                {ohlcData.length === 0 ? (
+                    <div className="h-[500px] flex flex-col items-center justify-center text-center">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                            <svg className="w-10 h-10 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                            No Historical Data Available
+                        </h3>
+                        <p className="text-slate-500 dark:text-slate-400 max-w-md">
+                            Chart data is currently unavailable for {symbol}. Historical price data will be displayed once available.
+                        </p>
+                    </div>
+                ) : isLoading ? (
                     <div className="h-[500px] flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+                            <p className="text-slate-500 dark:text-slate-400">Loading chart...</p>
+                        </div>
                     </div>
                 ) : (
                     <div ref={chartContainerRef} className="w-full" />
