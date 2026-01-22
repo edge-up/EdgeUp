@@ -32,6 +32,7 @@ export const CACHE_KEYS = {
     FO_LIST: 'master:fo_list',
     SECTOR_CONSTITUENTS: 'master:sector_constituents',
     QUOTES: (ids: string) => `quotes:${ids}`,
+    STOCK_INTRADAY: 'intraday:stock',
 };
 
 // Cache TTLs (in seconds)
