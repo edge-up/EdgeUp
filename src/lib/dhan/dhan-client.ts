@@ -1,4 +1,5 @@
 import { DhanQuote, DhanLTP, DhanInstrument, DhanHistoricalData } from '@/types';
+import { TokenStorage } from './token-storage';
 
 const DHAN_API_BASE = 'https://api.dhan.co/v2';
 
@@ -97,22 +98,62 @@ interface DhanClientConfig {
  * Dhan API Client for fetching market data
  * Documentation: https://dhanhq.co/docs/v2/
  * Rate Limits: Quote APIs = 1 request/second
- * Features: Auto-retry, request deduplication, rate limiting
+ * Features: Auto-retry, request deduplication, rate limiting, OAuth token management
  */
 export class DhanClient {
     private clientId: string;
     private accessToken: string;
+    private tokenLoadedFromStorage: boolean = false;
 
     constructor(config?: DhanClientConfig) {
-        this.clientId = config?.clientId || process.env.DHAN_CLIENT_ID || '';
-        this.accessToken = config?.accessToken || process.env.DHAN_ACCESS_TOKEN || '';
+        // Priority 1: Explicit config
+        if (config?.clientId && config?.accessToken) {
+            this.clientId = config.clientId;
+            this.accessToken = config.accessToken;
+            this.tokenLoadedFromStorage = false;
+        } else {
+            // Priority 2: Load from token storage (OAuth tokens)
+            const storedToken = TokenStorage.getToken();
+            if (storedToken && storedToken.accessToken) {
+                this.clientId = storedToken.clientId;
+                this.accessToken = storedToken.accessToken;
+                this.tokenLoadedFromStorage = true;
+                console.log('✅ DhanClient: Loaded token from storage');
+            } else {
+                // Priority 3: Fallback to environment variables (backward compatibility)
+                this.clientId = process.env.DHAN_CLIENT_ID || '';
+                this.accessToken = process.env.DHAN_ACCESS_TOKEN || '';
+                this.tokenLoadedFromStorage = false;
 
-        if (!this.clientId || !this.accessToken) {
-            console.warn('DhanClient: Missing credentials. Some features may not work.');
+                if (!this.accessToken) {
+                    console.warn('⚠️ DhanClient: No auth token found. Please authenticate via /admin/dhan-setup');
+                }
+            }
+        }
+
+        if (!this.clientId) {
+            console.warn('DhanClient: Missing client ID. Some features may not work.');
+        }
+    }
+
+    /**
+     * Ensure token is valid before making API calls
+     * Reloads from storage if token was updated externally
+     */
+    private ensureValidToken(): void {
+        if (this.tokenLoadedFromStorage) {
+            const storedToken = TokenStorage.getToken();
+            if (storedToken && storedToken.accessToken !== this.accessToken) {
+                // Token was refreshed, reload it
+                this.accessToken = storedToken.accessToken;
+                this.clientId = storedToken.clientId;
+                console.log('🔄 DhanClient: Reloaded updated token from storage');
+            }
         }
     }
 
     private get headers(): HeadersInit {
+        this.ensureValidToken();
         return {
             'Content-Type': 'application/json',
             'access-token': this.accessToken,

@@ -29,6 +29,9 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Dhan OAuth tokens (never commit!)
+.dhan-tokens.json
+
 # Vercel
 .vercel
 

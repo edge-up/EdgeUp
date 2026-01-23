@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NotificationBell } from './NotificationBell';
 import { ThemeToggle } from './ThemeToggle';
+import { DhanStatusIndicator } from './DhanStatusIndicator';
 
 export function Header() {
     const { data: session } = useSession();
@@ -55,6 +56,7 @@ export function Header() {
                     <div className="hidden md:flex items-center gap-2">
                         {session ? (
                             <>
+                                <DhanStatusIndicator />
                                 <ThemeToggle />
                                 <NotificationBell />
                                 <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800">
@@ -124,6 +126,7 @@ export function Header() {
                         {/* Mobile Theme Toggle & Notifications */}
                         {session && (
                             <div className="flex items-center gap-2 px-2 py-2">
+                                <DhanStatusIndicator />
                                 <ThemeToggle />
                                 <NotificationBell />
                             </div>

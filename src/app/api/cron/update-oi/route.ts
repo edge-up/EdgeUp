@@ -135,6 +135,24 @@ export async function GET(request: NextRequest) {
         const duration = Date.now() - startTime;
         console.log(`✅ OI update complete: ${updatedCount} updated, ${failedCount} failed in ${duration}ms`);
 
+        // Check Dhan token status (consolidated to save Vercel cron slot)
+        try {
+            const tokenCheckResponse = await fetch(new URL('/api/dhan/auth/refresh', request.url));
+            const tokenStatus = await tokenCheckResponse.json();
+
+            if (tokenStatus.needsRefresh) {
+                console.warn(`⚠️ [DHAN AUTH] Token needs refresh! Expires in ${tokenStatus.hoursUntilExpiry} hours`);
+                // Could send alert here (email, Slack, etc.)
+            } else if (tokenStatus.authenticated) {
+                console.log(`✅ [DHAN AUTH] Token valid for ${tokenStatus.hoursUntilExpiry} more hours`);
+            } else {
+                console.error('❌ [DHAN AUTH] No valid token found!');
+            }
+        } catch (e) {
+            console.error('⚠️ Dhan token check failed:', e);
+            // Don't fail the main job
+        }
+
         // Run cleanup (consolidated from separate cron to save Vercel slot)
         try {
             await fetch(new URL('/api/cron/cleanup', request.url), {

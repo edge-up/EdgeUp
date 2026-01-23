@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { Providers } from '@/components/providers';
 import { Header } from '@/components/ui/Header';
 import { MarketStatusBanner } from '@/components/MarketStatusBanner';
+import { DhanTokenWarning } from '@/components/dashboard/DhanTokenWarning';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,7 @@ export default async function DashboardLayout({
     return (
         <Providers>
             <div className="min-h-screen">
+                <DhanTokenWarning />
                 <Header />
                 <MarketStatusBanner />
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
