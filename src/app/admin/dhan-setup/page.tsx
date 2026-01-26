@@ -56,7 +56,8 @@ export default function DhanSetupPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to generate consent');
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `Failed to generate consent (${response.status})`);
             }
 
             const data = await response.json();

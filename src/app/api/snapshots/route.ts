@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/db/prisma';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/snapshots
  * List all snapshots with summary info

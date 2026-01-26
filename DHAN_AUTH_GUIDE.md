@@ -32,7 +32,7 @@ EdgeUp uses Dhan's OAuth-based authentication with API Key & Secret for accessin
 4. Toggle to **"API key"** section
 5. Enter app details:
    - **App Name**: `EdgeUp Trading Platform`
-   - **Redirect URL**: `http://localhost:3000/api/dhan/auth/callback` (dev) or `https://yourdomain.com/api/dhan/auth/callback` (production)
+   - **Redirect URL**: `http://localhost:3000/api/dhan/auth/callback` (dev) or `https://edgeup.vercel.app/api/dhan/auth/callback` (production)
 6. Save the generated **API Key** and **API Secret**
 
 ### 2. Configure Environment Variables
