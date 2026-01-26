@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const token = TokenStorage.getToken();
+        const token = await TokenStorage.getToken();
 
         if (!token) {
             console.warn('⚠️ [CRON] No Dhan token found - authentication required');

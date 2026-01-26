@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: NextRequest) {
     try {
-        const currentToken = TokenStorage.getToken();
+        const currentToken = await TokenStorage.getToken();
 
         if (!currentToken) {
             return NextResponse.json(
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
     try {
-        const currentToken = TokenStorage.getToken();
+        const currentToken = await TokenStorage.getToken();
 
         if (!currentToken) {
             return NextResponse.json({
