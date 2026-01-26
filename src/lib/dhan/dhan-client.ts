@@ -114,17 +114,11 @@ export class DhanClient {
         } else {
             // Priority 2: Initialize empty, load lazily from storage
             this.clientId = process.env.DHAN_CLIENT_ID || '';
-            this.accessToken = process.env.DHAN_ACCESS_TOKEN || '';
-            this.tokenLoadedFromStorage = !this.accessToken;
+            this.accessToken = ''; // Don't load from env yet, prefer storage
+            this.tokenLoadedFromStorage = true;
 
-            if (!this.accessToken) {
-                // If no env token, we rely on storage (loaded in ensureValidToken)
-                console.log('ℹ️ DhanClient: Initialized in storage mode (token will load lazily)');
-            }
-        }
-
-        if (!this.clientId) {
-            console.warn('DhanClient: Missing client ID. Some features may not work.');
+            // Log initialization mode
+            console.log('ℹ️ DhanClient: Initialized in storage mode (will prefer Redis over Env)');
         }
     }
 
@@ -134,14 +128,22 @@ export class DhanClient {
      */
     private async ensureValidToken(): Promise<void> {
         if (this.tokenLoadedFromStorage) {
+            // 1. Try to get fresh token from Storage (Redis)
             const storedToken = await TokenStorage.getToken();
+
             if (storedToken) {
-                // Always update if we have a valid stored token
+                // If found in storage, use it (highest priority)
                 this.accessToken = storedToken.accessToken;
                 this.clientId = storedToken.clientId;
-                // console.log('🔄 DhanClient: Refreshed token from storage');
-            } else if (!this.accessToken) {
-                console.warn('⚠️ DhanClient: No valid token found in storage or env');
+            } else {
+                // 2. Fallback to Environment Variable
+                const envToken = process.env.DHAN_ACCESS_TOKEN;
+                if (envToken) {
+                    this.accessToken = envToken;
+                    // console.log('ℹ️ DhanClient: Using fallback token from .env');
+                } else if (!this.accessToken) {
+                    console.warn('⚠️ DhanClient: No valid token found in storage or env');
+                }
             }
         }
     }
