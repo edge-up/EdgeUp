@@ -112,22 +112,14 @@ export class DhanClient {
             this.accessToken = config.accessToken;
             this.tokenLoadedFromStorage = false;
         } else {
-            // Priority 2: Load from token storage (OAuth tokens)
-            const storedToken = TokenStorage.getToken();
-            if (storedToken && storedToken.accessToken) {
-                this.clientId = storedToken.clientId;
-                this.accessToken = storedToken.accessToken;
-                this.tokenLoadedFromStorage = true;
-                console.log('✅ DhanClient: Loaded token from storage');
-            } else {
-                // Priority 3: Fallback to environment variables (backward compatibility)
-                this.clientId = process.env.DHAN_CLIENT_ID || '';
-                this.accessToken = process.env.DHAN_ACCESS_TOKEN || '';
-                this.tokenLoadedFromStorage = false;
+            // Priority 2: Initialize empty, load lazily from storage
+            this.clientId = process.env.DHAN_CLIENT_ID || '';
+            this.accessToken = process.env.DHAN_ACCESS_TOKEN || '';
+            this.tokenLoadedFromStorage = !this.accessToken;
 
-                if (!this.accessToken) {
-                    console.warn('⚠️ DhanClient: No auth token found. Please authenticate via /admin/dhan-setup');
-                }
+            if (!this.accessToken) {
+                // If no env token, we rely on storage (loaded in ensureValidToken)
+                console.log('ℹ️ DhanClient: Initialized in storage mode (token will load lazily)');
             }
         }
 
@@ -140,20 +132,22 @@ export class DhanClient {
      * Ensure token is valid before making API calls
      * Reloads from storage if token was updated externally
      */
-    private ensureValidToken(): void {
+    private async ensureValidToken(): Promise<void> {
         if (this.tokenLoadedFromStorage) {
-            const storedToken = TokenStorage.getToken();
-            if (storedToken && storedToken.accessToken !== this.accessToken) {
-                // Token was refreshed, reload it
+            const storedToken = await TokenStorage.getToken();
+            if (storedToken) {
+                // Always update if we have a valid stored token
                 this.accessToken = storedToken.accessToken;
                 this.clientId = storedToken.clientId;
-                console.log('🔄 DhanClient: Reloaded updated token from storage');
+                // console.log('🔄 DhanClient: Refreshed token from storage');
+            } else if (!this.accessToken) {
+                console.warn('⚠️ DhanClient: No valid token found in storage or env');
             }
         }
     }
 
-    private get headers(): HeadersInit {
-        this.ensureValidToken();
+    private async getHeaders(): Promise<HeadersInit> {
+        await this.ensureValidToken();
         return {
             'Content-Type': 'application/json',
             'access-token': this.accessToken,
@@ -309,7 +303,7 @@ export class DhanClient {
             console.log('  Full request body:', JSON.stringify(requestBody, null, 2));
             console.log('  Headers:', {
                 'Content-Type': 'application/json',
-                'access-token': (this.headers as any)['access-token'] ? '***PRESENT***' : '***MISSING***'
+                'access-token': ((await this.getHeaders()) as any)['access-token'] ? '***PRESENT***' : '***MISSING***'
             });
 
             // Use /charts/intraday endpoint (NOT /charts/historical)
@@ -318,7 +312,7 @@ export class DhanClient {
 
             const response = await fetch(url, {
                 method: 'POST',
-                headers: this.headers,
+                headers: await this.getHeaders(),
                 body: JSON.stringify(requestBody),
             });
 
@@ -434,7 +428,7 @@ export class DhanClient {
                 `${DHAN_API_BASE}/scrip/search?query=${encodeURIComponent(query)}`,
                 {
                     method: 'GET',
-                    headers: this.headers,
+                    headers: await this.getHeaders(),
                 }
             );
 

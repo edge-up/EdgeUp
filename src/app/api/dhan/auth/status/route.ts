@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { TokenStorage } from '@/lib/dhan/token-storage';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/dhan/auth/status
  * Check current Dhan authentication status
  */
 export async function GET(request: NextRequest) {
     try {
-        const token = TokenStorage.getToken();
+        const token = await TokenStorage.getToken();
 
         if (!token) {
             return NextResponse.json({
@@ -48,7 +50,7 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
     try {
-        TokenStorage.clearToken();
+        await TokenStorage.clearToken();
 
         return NextResponse.json({
             success: true,

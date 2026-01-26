@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         const tokenData = await authService.consumeConsent(tokenId);
 
         // Save to storage
-        TokenStorage.saveToken({
+        await TokenStorage.saveToken({
             accessToken: tokenData.accessToken,
             expiryTime: tokenData.expiryTime,
             clientId: tokenData.dhanClientId,
