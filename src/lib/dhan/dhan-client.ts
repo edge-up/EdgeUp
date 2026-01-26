@@ -175,7 +175,7 @@ export class DhanClient {
 
                 const response = await fetch(`${DHAN_API_BASE}/marketfeed/ltp`, {
                     method: 'POST',
-                    headers: this.headers,
+                    headers: await this.getHeaders(),
                     body: JSON.stringify(payload),
                 });
 
@@ -213,7 +213,7 @@ export class DhanClient {
 
                 const response = await fetch(`${DHAN_API_BASE}/marketfeed/quote`, {
                     method: 'POST',
-                    headers: this.headers,
+                    headers: await this.getHeaders(),
                     body: JSON.stringify(payload),
                 });
 
@@ -248,7 +248,7 @@ export class DhanClient {
 
                 const response = await fetch(`${DHAN_API_BASE}/marketfeed/ohlc`, {
                     method: 'POST',
-                    headers: this.headers,
+                    headers: await this.getHeaders(),
                     body: JSON.stringify(payload),
                 });
 
