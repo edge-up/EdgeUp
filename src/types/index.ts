@@ -163,7 +163,7 @@ export interface MarketConfig {
 }
 
 export const DEFAULT_MARKET_CONFIG: MarketConfig = {
-    snapshotTime: { hour: 9, minute: 30 },
+    snapshotTime: { hour: 9, minute: 0 },
     marketOpenTime: { hour: 9, minute: 15 },
     marketCloseTime: { hour: 15, minute: 30 },
     timezone: 'Asia/Kolkata',

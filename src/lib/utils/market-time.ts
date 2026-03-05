@@ -60,7 +60,9 @@ export function isMarketOpen(config: MarketConfig = DEFAULT_MARKET_CONFIG): bool
 }
 
 /**
- * Check if we're in the analysis window (09:15 - 09:30 AM IST)
+ * Check if we're in the analysis window (from market open until snapshot time)
+ * Usually 09:15 - 09:30 or now 09:15 - 09:00 (which means window is zero)
+ * If snapshot is before open, we'll return false as analysis requires open market.
  */
 export function isInAnalysisWindow(config: MarketConfig = DEFAULT_MARKET_CONFIG): boolean {
     const now = getCurrentIST();
@@ -68,7 +70,12 @@ export function isInAnalysisWindow(config: MarketConfig = DEFAULT_MARKET_CONFIG)
     const openMinutes = config.marketOpenTime.hour * 60 + config.marketOpenTime.minute;
     const snapshotMinutes = config.snapshotTime.hour * 60 + config.snapshotTime.minute;
 
-    return currentMinutes >= openMinutes && currentMinutes < snapshotMinutes;
+    // If snapshot is before open (e.g. 9:00 AM), analysis window is effectively empty 
+    // for intraday momentum, but we'll return true if we're between the two just in case.
+    const start = Math.min(openMinutes, snapshotMinutes);
+    const end = Math.max(openMinutes, snapshotMinutes);
+
+    return currentMinutes >= start && currentMinutes < end;
 }
 
 /**

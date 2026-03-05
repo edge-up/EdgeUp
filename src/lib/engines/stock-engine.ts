@@ -405,14 +405,33 @@ export class StockEngine {
         }
 
         try {
-            const quotes = await this.dhanClient.getQuotes([stock.dhanSecurityId]);
-            const quote = quotes[0];
+            // Fetch both equity and FNO quotes if applicable
+            const instrumentIds = [stock.dhanSecurityId];
+            if (stock.isFOEligible && stock.dhanFNOSecurityId) {
+                instrumentIds.push(stock.dhanFNOSecurityId);
+            }
 
-            if (!quote) {
+            const allQuotes = await this.dhanClient.getQuotes(instrumentIds);
+            const equityQuote = allQuotes.find(q => q.securityId === stock.dhanSecurityId);
+            const fnoQuote = allQuotes.find(q => q.securityId === stock.dhanFNOSecurityId);
+
+            if (!equityQuote) {
                 return null;
             }
 
-            const percentChange = calculatePercentChange(quote.ltp, quote.previousClose);
+            const percentChange = calculatePercentChange(equityQuote.ltp, equityQuote.previousClose);
+
+            // Calculate OI change if FNO data available
+            let oiChangePercent = 0;
+            const currentOI = fnoQuote?.openInterest || 0;
+            const previousOI = stock.previousDayOI ? Number(stock.previousDayOI) : 0;
+
+            if (previousOI > 0 && currentOI > 0) {
+                oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
+            }
+
+            // Fetch previous day OHLC
+            const prevDayData = await this.dhanClient.getPreviousDayOHLC(stock.dhanSecurityId, 'NSE_EQ');
 
             return {
                 id: stock.id,
@@ -421,16 +440,23 @@ export class StockEngine {
                 sectorId: sectorInfo.id,
                 sectorName: sectorInfo.name,
                 dhanSecurityId: stock.dhanSecurityId,
-                ltp: quote.ltp,
-                previousClose: quote.previousClose,
+                ltp: equityQuote.ltp,
+                previousClose: equityQuote.previousClose,
                 percentChange: Math.round(percentChange * 100) / 100,
                 direction: getDirection(percentChange),
                 isFOEligible: stock.isFOEligible,
                 isQualifying: isQualifying(percentChange) && stock.isFOEligible,
-                volume: quote.volume,
-                open: quote.open,
-                high: quote.high,
-                low: quote.low,
+                volume: equityQuote.volume,
+                open: equityQuote.open,
+                high: equityQuote.high,
+                low: equityQuote.low,
+                openInterest: currentOI,
+                previousOpenInterest: previousOI,
+                oiChangePercent: Math.round(oiChangePercent * 100) / 100,
+                previousDayHigh: prevDayData?.high,
+                previousDayLow: prevDayData?.low,
+                previousDayOpen: prevDayData?.open,
+                breakoutType: equityQuote.ltp > (prevDayData?.high || 0) ? 'BREAKOUT' : equityQuote.ltp < (prevDayData?.low || 0) ? 'BREAKDOWN' : null,
             };
         } catch (error) {
             console.error('StockEngine.getStockBySymbol error:', error);

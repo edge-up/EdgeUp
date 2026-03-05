@@ -2,6 +2,7 @@
 
 import { StockData } from '@/types';
 import { OI_CHANGE_THRESHOLD } from '@/lib/config';
+import Link from 'next/link';
 
 interface WatchlistTableProps {
     stocks: StockData[];
@@ -83,9 +84,12 @@ export function WatchlistTable({ stocks }: WatchlistTableProps) {
                                         <div className="flex items-center gap-3">
                                             <div className={`w-1 h-8 rounded-full ${isUp ? 'bg-emerald-500' : 'bg-rose-500'}`} />
                                             <div>
-                                                <span className="font-semibold text-slate-800 dark:text-white block">
+                                                <Link
+                                                    href={`/dashboard/stocks/${stock.symbol}`}
+                                                    className="font-semibold text-slate-800 dark:text-white block hover:text-primary-500 transition-colors"
+                                                >
                                                     {stock.symbol}
-                                                </span>
+                                                </Link>
                                                 <span className="text-xs text-slate-500 dark:text-slate-400">
                                                     {stock.name?.substring(0, 20)}{stock.name && stock.name.length > 20 ? '...' : ''}
                                                 </span>

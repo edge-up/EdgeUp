@@ -68,21 +68,41 @@ export async function GET() {
             const securityId = 'NSE_EQ_1333';
 
             // Capture what the client is using
-            const headers = await (client as any).getHeaders();
-            diagnostics.api.headersUsed = {
-                'client-id': headers['client-id'],
-                'access-token-length': headers['access-token']?.length
-            };
+            // Test Equity LTP
+            const equityResult = await client.getLTP(['NSE_EQ_1333']);
+            diagnostics.api.equityResult = equityResult;
 
-            const result = await client.getLTP([securityId]);
+            // Test FNO Quote (HDFCBANK FNO)
+            const fnoId = 'NSE_FNO_49422';
+
+            // We'll use getQuotes but also try to capture the raw response for inspection
+            // since getQuotes calls parseQuoteResponse internally.
+            const fnoQuotes = await client.getQuotes([fnoId]);
+            diagnostics.api.fnoQuotes = fnoQuotes;
+
+            // Try to fetch via fetch directly to see raw data
+            const headers = await (client as any).getHeaders();
+            const rawResponse = await fetch('https://api.dhan.co/marketfeed/quote', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({
+                    NSE_FNO: [49422]
+                })
+            });
+
+            if (rawResponse.ok) {
+                diagnostics.api.rawFnoData = await rawResponse.json();
+            } else {
+                diagnostics.api.rawFnoError = await rawResponse.text();
+            }
+
             diagnostics.api.success = true;
-            diagnostics.api.data = result;
         } catch (e) {
             diagnostics.api.error = e instanceof Error ? e.message : String(e);
         }
 
         return NextResponse.json({
-            success: diagnostics.api.success,
+            success: true,
             diagnostics
         });
 

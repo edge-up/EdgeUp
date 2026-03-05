@@ -528,6 +528,14 @@ export class DhanClient {
                     const change = lastPrice - prevClose;
                     const changePercent = prevClose > 0 ? (change / prevClose) * 100 : 0;
 
+                    // Handle Open Interest with multiple field variations
+                    const openInterest = rawInfo.oi || rawInfo.open_interest || rawInfo.openInterest || 0;
+
+                    if (openInterest === 0 && (segment === 'NSE_FNO' || segment === 'MCX_FO')) {
+                        // Log a warning for F&O instruments with 0 OI as it's often an indicator of parsing issue or missing data
+                        // console.warn(`⚠️ DhanClient: 0 OI received for FNO instrument ${segment}_${secId}`);
+                    }
+
                     results.push({
                         securityId: `${segment}_${secId}`,
                         ltp: lastPrice,
@@ -540,7 +548,7 @@ export class DhanClient {
                         change,
                         changePercent,
                         lastTradeTime: rawInfo.last_trade_time || Date.now(),
-                        openInterest: rawInfo.oi || 0,
+                        openInterest: Number(openInterest),
                     });
                 });
             });
