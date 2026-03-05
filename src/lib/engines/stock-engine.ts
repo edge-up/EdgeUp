@@ -251,6 +251,10 @@ export class StockEngine {
                 ? Number(stockOI.previousDayOI)
                 : 0;
 
+            if (previousOI === 0 && stock.isFOEligible) {
+                console.log(`⚠️ StockEngine OI Warning: ${stock.symbol} has 0 previousDayOI in the database. OI Change will be 0.`);
+            }
+
             let oiChangePercent = 0;
             if (previousOI > 0 && currentOI > 0) {
                 oiChangePercent = ((currentOI - previousOI) / previousOI) * 100;
