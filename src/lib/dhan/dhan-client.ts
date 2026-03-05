@@ -117,8 +117,11 @@ export class DhanClient {
             this.accessToken = ''; // Don't load from env yet, prefer storage
             this.tokenLoadedFromStorage = true;
 
-            // Log initialization mode
-            console.log('ℹ️ DhanClient: Initialized in storage mode (will prefer Redis over Env)');
+            // Log initialization state to help debug production Unauthorized errors
+            const hasEnvToken = !!process.env.DHAN_ACCESS_TOKEN;
+            const hasUpstashUrl = !!process.env.UPSTASH_REDIS_REST_URL;
+            console.log(`ℹ️ DhanClient Init: Storage mode active. Env Token: ${hasEnvToken}, Redis Available: ${hasUpstashUrl}`);
+
         }
     }
 
@@ -128,32 +131,48 @@ export class DhanClient {
      */
     private async ensureValidToken(): Promise<void> {
         if (this.tokenLoadedFromStorage) {
-            // 1. Try to get fresh token from Storage (Redis)
-            const storedToken = await TokenStorage.getToken();
+            // 1. Try to get fresh token from Storage (Redis or FileSystem)
+            try {
+                const storedToken = await TokenStorage.getToken();
 
-            if (storedToken) {
-                // If found in storage, use it (highest priority)
-                this.accessToken = storedToken.accessToken;
-                this.clientId = storedToken.clientId;
-            } else {
-                // 2. Fallback to Environment Variable
-                const envToken = process.env.DHAN_ACCESS_TOKEN;
-                if (envToken) {
-                    this.accessToken = envToken;
-                    // console.log('ℹ️ DhanClient: Using fallback token from .env');
-                } else if (!this.accessToken) {
-                    console.warn('⚠️ DhanClient: No valid token found in storage or env');
+                if (storedToken && storedToken.accessToken) {
+                    // If found in storage, use it (highest priority)
+                    this.accessToken = storedToken.accessToken;
+                    this.clientId = storedToken.clientId;
+                    // console.log('ℹ️ DhanClient: successfully loaded token from storage');
+                } else {
+                    this.fallbackToEnvToken('Storage returned null or invalid token');
                 }
+            } catch (err) {
+                this.fallbackToEnvToken(`Storage check failed: ${(err as Error).message}`);
             }
+        }
+    }
+
+    private fallbackToEnvToken(reason: string) {
+        const envToken = process.env.DHAN_ACCESS_TOKEN;
+        const envClientId = process.env.DHAN_CLIENT_ID;
+
+        if (envToken) {
+            this.accessToken = envToken;
+            if (envClientId) this.clientId = envClientId;
+            console.log(`ℹ️ DhanClient: Using fallback token from .env (Reason: ${reason})`);
+        } else if (!this.accessToken) {
+            console.warn(`⚠️ DhanClient: SEVERE - No valid token found in storage OR env. API calls will fail. (Reason: ${reason})`);
         }
     }
 
     private async getHeaders(): Promise<HeadersInit> {
         await this.ensureValidToken();
+
+        if (!this.accessToken) {
+            console.error('🚨 DhanClient: Attempting API call without an access token!');
+        }
+
         return {
             'Content-Type': 'application/json',
-            'access-token': this.accessToken,
-            'client-id': this.clientId,
+            'access-token': this.accessToken || '',
+            'client-id': this.clientId || '',
         };
     }
 
